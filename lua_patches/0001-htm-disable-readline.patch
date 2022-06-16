@@ -1,0 +1,28 @@
+From 1a3c54e6a30ea0bd20337844fd26673396506cd0 Mon Sep 17 00:00:00 2001
+From: Justin Chadwell <me@jedevc.com>
+Date: Thu, 16 Jun 2022 08:43:14 +0100
+Subject: [PATCH] htm: disable readline
+
+---
+ makefile | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/makefile b/makefile
+index d46e650c..85e6b637 100644
+--- a/makefile
++++ b/makefile
+@@ -66,9 +66,9 @@ LOCAL = $(TESTS) $(CWARNS)
+ 
+ 
+ # enable Linux goodies
+-MYCFLAGS= $(LOCAL) -std=c99 -DLUA_USE_LINUX -DLUA_USE_READLINE
++MYCFLAGS= $(LOCAL) -std=c99 -DLUA_USE_LINUX
+ MYLDFLAGS= $(LOCAL) -Wl,-E
+-MYLIBS= -ldl -lreadline
++MYLIBS= -ldl
+ 
+ 
+ CC= gcc
+-- 
+2.36.1
+
