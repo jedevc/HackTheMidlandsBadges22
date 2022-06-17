@@ -28,8 +28,12 @@ int run_lua(const char* script) {
 	cost = 0;
 	if (lua == NULL) {
 		lua = luaL_newstate();
-		lua_pushinteger(lua, 100);
-		lua_setglobal(lua, "foo");
+		lua_pushstring(lua, "HackTheMidlands v7");
+		lua_setglobal(lua, "title");
+		lua_pushstring(lua, "Lorem Ipsum");
+		lua_setglobal(lua, "content");
+		lua_newtable(lua);
+		lua_setglobal(lua, "image");
 		luaL_openlibs(lua);
 		lua_sethook(lua, hook, LUA_MASKCOUNT, BUDGET_STEPS);
 	}
