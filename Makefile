@@ -3,6 +3,9 @@
 all: build
 
 build: prebuild build/index.html build/index.js build/badge.js
+	
+clean:
+	rm -rf build/
 
 prebuild:
 	mkdir -p build
@@ -20,4 +23,5 @@ build/badge.js: main.c lua/liblua.a
 		-s EXPORTED_FUNCTIONS="['_run_lua']" \
 		-s EXPORTED_RUNTIME_METHODS=ccall,cwrap \
 		-s MODULARIZE=1 \
+		-s ASSERTIONS=1 \
 		-s 'EXPORT_NAME="createBadgeModule"'
