@@ -32,13 +32,13 @@ static int rgb(lua_State *L) {
 
   int value = 0;
   if (lua_isinteger(L, 1) && lua_isinteger(L, 2) && lua_isinteger(L, 3)) {
-    value += (lua_tointeger(L, 1) & 0xff) << 16; // r
-    value += (lua_tointeger(L, 2) & 0xff) << 8;  // g
-    value += (lua_tointeger(L, 3) & 0xff);       // b
+    value |= (lua_tointeger(L, 1) & 0xff) << 16; // r
+    value |= (lua_tointeger(L, 2) & 0xff) << 8;  // g
+    value |= (lua_tointeger(L, 3) & 0xff);       // b
   } else {
-    value += ((int)round(255 * lua_tonumber(L, 1)) & 0xff) << 16; // r
-    value += ((int)round(255 * lua_tonumber(L, 2)) & 0xff) << 8;  // g
-    value += ((int)round(255 * lua_tonumber(L, 3)) & 0xff);       // b
+    value |= ((int)round(255 * lua_tonumber(L, 1)) & 0xff) << 16; // r
+    value |= ((int)round(255 * lua_tonumber(L, 2)) & 0xff) << 8;  // g
+    value |= ((int)round(255 * lua_tonumber(L, 3)) & 0xff);       // b
   }
   lua_pushinteger(L, value);
   return 1;
@@ -101,9 +101,9 @@ static int hsl(lua_State *L) {
   }
 
   int value = 0;
-  value += ((int)round(255 * (r + m)) & 0xff) << 16; // r
-  value += ((int)round(255 * (g + m)) & 0xff) << 8;  // g
-  value += ((int)round(255 * (b + m)) & 0xff);       // b
+  value |= ((int)round(255 * (r + m)) & 0xff) << 16; // r
+  value |= ((int)round(255 * (g + m)) & 0xff) << 8;  // g
+  value |= ((int)round(255 * (b + m)) & 0xff);       // b
 
   lua_pushinteger(L, value);
   return 1;
@@ -114,7 +114,7 @@ struct LuaResult {
 
   std::string title;
   std::string content;
-  std::vector<std::vector<unsigned char>> image;
+  std::vector<std::vector<unsigned int>> image;
 };
 
 class Lua {
@@ -132,10 +132,10 @@ public:
     lua_pushstring(state, "Lorem Ipsum");
     lua_setglobal(state, "content");
 
-    lua_pushinteger(state, 64);
+    lua_pushinteger(state, image_width);
     lua_setglobal(state, "width");
 
-    lua_pushinteger(state, 36);
+    lua_pushinteger(state, image_height);
     lua_setglobal(state, "height");
 
     lua_pushcfunction(state, rgb);
@@ -144,10 +144,10 @@ public:
     lua_setglobal(state, "hsl");
 
     lua_newtable(state);
-    for (int i = 0; i < 64; i++) {
+    for (int i = 0; i < image_width; i++) {
       lua_pushinteger(state, i);
       lua_newtable(state);
-      for (int j = 0; j < 36; j++) {
+      for (int j = 0; j < image_height; j++) {
         lua_pushinteger(state, j);
         lua_pushinteger(state, 0);
         lua_settable(state, -3);
@@ -200,14 +200,14 @@ private:
     std::string content = lua_tostring(state, -1);
     lua_pop(state, 1);
 
-    std::vector<std::vector<unsigned char>> image;
+    std::vector<std::vector<unsigned int>> image;
     lua_getglobal(state, "image");
-    for (int i = 0; i < 64; i++) {
-      std::vector<unsigned char> line;
+    for (int i = 0; i < image_width; i++) {
+      std::vector<unsigned int> line;
 
       lua_pushinteger(state, i);
       lua_gettable(state, -2);
-      for (int j = 0; j < 36; j++) {
+      for (int j = 0; j < image_height; j++) {
         lua_pushinteger(state, j);
         lua_gettable(state, -2);
         line.push_back(lua_tointeger(state, -1));
@@ -222,12 +222,15 @@ private:
 
   lua_State *state = NULL;
   int cost = 0;
+
+  int image_width = 64;
+  int image_height = 36;
 };
 
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_BINDINGS(my_module) {
-  register_vector<unsigned char>("VectorImage");
-  register_vector<std::vector<unsigned char>>("VectorVectorImage");
+  register_vector<unsigned int>("VectorImage");
+  register_vector<std::vector<unsigned int>>("VectorVectorImage");
   value_object<LuaResult>("LuaResult")
     .field("title", &LuaResult::title)
     .field("content", &LuaResult::content)
