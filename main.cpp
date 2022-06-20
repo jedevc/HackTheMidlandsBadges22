@@ -114,6 +114,7 @@ struct LuaResult {
 
   std::string title;
   std::string content;
+  std::vector<std::vector<unsigned char>> image;
 };
 
 class Lua {
@@ -146,7 +147,7 @@ public:
     for (int i = 0; i < 64; i++) {
       lua_pushinteger(state, i);
       lua_newtable(state);
-      for (int j = 0; i < 36; i++) {
+      for (int j = 0; j < 36; j++) {
         lua_pushinteger(state, j);
         lua_pushinteger(state, 0);
         lua_settable(state, -3);
@@ -193,10 +194,30 @@ private:
   LuaResult get_result() {
     lua_getglobal(state, "title");
     std::string title = lua_tostring(state, -1);
+    lua_pop(state, 1);
+
     lua_getglobal(state, "content");
     std::string content = lua_tostring(state, -1);
-    // TODO: extract image
-    return LuaResult{.title{title}, .content{content}};
+    lua_pop(state, 1);
+
+    std::vector<std::vector<unsigned char>> image;
+    lua_getglobal(state, "image");
+    for (int i = 0; i < 64; i++) {
+      std::vector<unsigned char> line;
+
+      lua_pushinteger(state, i);
+      lua_gettable(state, -2);
+      for (int j = 0; j < 36; j++) {
+        lua_pushinteger(state, j);
+        lua_gettable(state, -2);
+        line.push_back(lua_tointeger(state, -1));
+        lua_pop(state, 1);
+      }
+      lua_pop(state, 1);
+      image.push_back(line);
+    }
+
+    return LuaResult{.title{title}, .content{content}, .image{image}};
   }
 
   lua_State *state = NULL;
@@ -205,9 +226,12 @@ private:
 
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_BINDINGS(my_module) {
+  register_vector<unsigned char>("VectorImage");
+  register_vector<std::vector<unsigned char>>("VectorVectorImage");
   value_object<LuaResult>("LuaResult")
     .field("title", &LuaResult::title)
     .field("content", &LuaResult::content)
+    .field("image", &LuaResult::image)
     .field("err", &LuaResult::err);
   class_<Lua>("Lua")
     .constructor<>()
