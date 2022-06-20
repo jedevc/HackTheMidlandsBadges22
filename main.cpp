@@ -2,6 +2,7 @@
 #include <cmath>
 #include <string>
 #include <vector>
+#include <optional>
 
 extern "C" {
 #include "lua.h"
@@ -25,8 +26,7 @@ using namespace emscripten;
 static int rgb(lua_State *L) {
   int n = lua_gettop(L);
   if (n != 3) {
-    lua_pushstring(L, "rgb expected 3 arguments");
-    lua_error(L);
+    luaL_error(L, "rgb expected 3 arguments");
     return 0;
   }
 
@@ -47,8 +47,7 @@ static int rgb(lua_State *L) {
 static int hsl(lua_State *L) {
   int n = lua_gettop(L);
   if (n != 3) {
-    lua_pushstring(L, "hsl expected 3 arguments");
-    lua_error(L);
+    luaL_error(L, "hsl expected 3 arguments");
     return 0;
   }
 
@@ -110,6 +109,13 @@ static int hsl(lua_State *L) {
   return 1;
 }
 
+struct LuaResult {
+  std::string err;
+
+  std::string title;
+  std::string content;
+};
+
 class Lua {
 public:
   Lua() {
@@ -158,18 +164,20 @@ public:
     state = NULL;
   }
 
-  void run(std::string script) {
+  LuaResult run(std::string script) {
     cost = 0;
-    int res = luaL_dostring(state, script.c_str());
-    if (res != 0) {
-      printf("> %d\n", res);
 
+    int code = luaL_dostring(state, script.c_str());
+    if (code != 0) {
       size_t len = 0;
       const char *value = lua_tolstring(state, lua_gettop(state), &len);
-      printf("error: %s\n", value);
+      return LuaResult{.err{value}};
     }
+    
+    return get_result();
   }
-
+  
+private:
   static void hook(lua_State *L, lua_Debug *ar) {
     lua_pushlightuserdata(L, (void *)L);
     lua_gettable(L, LUA_REGISTRYINDEX);
@@ -178,18 +186,31 @@ public:
 
     lua->cost += BUDGET_STEPS;
     if (lua->cost > BUDGET) {
-      lua_pushstring(L, "too many instructions");
-      lua_error(L);
+      luaL_error(L, "too many instructions");
     }
   }
 
-private:
+  LuaResult get_result() {
+    lua_getglobal(state, "title");
+    std::string title = lua_tostring(state, -1);
+    lua_getglobal(state, "content");
+    std::string content = lua_tostring(state, -1);
+    // TODO: extract image
+    return LuaResult{.title{title}, .content{content}};
+  }
+
   lua_State *state = NULL;
   int cost = 0;
 };
 
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_BINDINGS(my_module) {
-  class_<Lua>("Lua").constructor<>().function("run", &Lua::run);
+  value_object<LuaResult>("LuaResult")
+    .field("title", &LuaResult::title)
+    .field("content", &LuaResult::content)
+    .field("err", &LuaResult::err);
+  class_<Lua>("Lua")
+    .constructor<>()
+    .function("run", &Lua::run);
 }
 #endif

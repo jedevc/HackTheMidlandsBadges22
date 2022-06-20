@@ -19,7 +19,7 @@ build/index.js: index.js
 	cp index.js build
 build/badge.js: main.cpp lua/liblua.a
 	em++ -Ilua main.cpp lua/liblua.a -O2 -o build/badge.js \
-		-std=c++11 \
+		-std=c++17 \
 		-lembind \
 		-s WASM=1 \
 		-s MODULARIZE=1 \
