@@ -1,0 +1,15 @@
+{
+  "name": "badge-view",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:jedevc/badge-view.git",
+  "author": "Justin Chadwell <me@jedevc.com>",
+  "license": "MIT",
+  "browserslist": "> 0.25%, not dead",
+  "devDependencies": {
+    "@babel/cli": "^7.17.10",
+    "@babel/core": "^7.18.5",
+    "@babel/preset-env": "^7.18.2",
+    "sass": "^1.53.0"
+  }
+}
