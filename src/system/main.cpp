@@ -109,12 +109,20 @@ static int hsl(lua_State *L) {
   return 1;
 }
 
-struct LuaResult {
+class LuaResult {
+public:
   std::string err;
 
   std::string title;
   std::string content;
-  std::vector<std::vector<unsigned int>> image;
+
+  std::vector<unsigned int> image;
+  unsigned int image_width;
+  unsigned int image_height;
+  
+  unsigned int pixel(int x, int y) {
+    return image[x * image_height + y];
+  }
 };
 
 class Lua {
@@ -175,7 +183,8 @@ public:
       return LuaResult{.err{value}};
     }
     
-    return get_result();
+    LuaResult result = get_result();
+    return result;
   }
   
 private:
@@ -200,42 +209,45 @@ private:
     std::string content = lua_tostring(state, -1);
     lua_pop(state, 1);
 
-    std::vector<std::vector<unsigned int>> image;
+    std::vector<unsigned int> image;
     lua_getglobal(state, "image");
     for (int i = 0; i < image_width; i++) {
-      std::vector<unsigned int> line;
-
       lua_pushinteger(state, i);
       lua_gettable(state, -2);
       for (int j = 0; j < image_height; j++) {
         lua_pushinteger(state, j);
         lua_gettable(state, -2);
-        line.push_back(lua_tointeger(state, -1));
+        image.push_back(lua_tointeger(state, -1));
         lua_pop(state, 1);
       }
       lua_pop(state, 1);
-      image.push_back(line);
     }
 
-    return LuaResult{.title{title}, .content{content}, .image{image}};
+    return LuaResult{
+      .title{title},
+      .content{content},
+      .image{image},
+      .image_width = image_width,
+      .image_height = image_height,
+    };
   }
 
   lua_State *state = NULL;
   int cost = 0;
 
-  int image_width = 64;
-  int image_height = 36;
+  unsigned int image_width = 64;
+  unsigned int image_height = 36;
 };
 
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_BINDINGS(my_module) {
   register_vector<unsigned int>("VectorImage");
   register_vector<std::vector<unsigned int>>("VectorVectorImage");
-  value_object<LuaResult>("LuaResult")
-    .field("title", &LuaResult::title)
-    .field("content", &LuaResult::content)
-    .field("image", &LuaResult::image)
-    .field("err", &LuaResult::err);
+  class_<LuaResult>("LuaResult")
+    .property("title", &LuaResult::title)
+    .property("content", &LuaResult::content)
+    .property("err", &LuaResult::err)
+    .function("pixel", &LuaResult::pixel);
   class_<Lua>("Lua")
     .constructor<>()
     .function("run", &Lua::run);

@@ -16,26 +16,39 @@ window.onload = () => {
   let content = document.querySelector("#content");
 
   createBadgeModule().then((Module) => {
-    let lua = new Module.Lua();
-    let result = lua.run(program);
-    if (result.err) {
-      console.error(result.err);
-      return;
-    }
+    const i = setInterval(() => {
+      let lua = new Module.Lua();
+      try {
+        console.log("loop");
 
-    title.innerText = result.title;
-    content.innerText = result.content;
+        let result;
+        result = lua.run(program);
+        if (result.err) {
+          throw new Error(result.err);
+        }
 
-    for (let i = 0; i < 64; i++) {
-      for (let j = 0; j < 36; j++) {
-        let pixel = result.image.get(i).get(j);
-        let image_idx = 4 * (i + j * canvas.width);
-        image.data[image_idx + 0] = (pixel >> 16) & 0xff;
-        image.data[image_idx + 1] = (pixel >> 8) & 0xff;
-        image.data[image_idx + 2] = pixel & 0xff;
-        image.data[image_idx + 3] = 255;
+        title.innerText = result.title;
+        content.innerText = result.content;
+
+        for (let i = 0; i < 64; i++) {
+          for (let j = 0; j < 36; j++) {
+            let pixel = result.pixel(i, j)
+            let image_idx = 4 * (i + j * canvas.width);
+            image.data[image_idx + 0] = (pixel >> 16) & 0xff;
+            image.data[image_idx + 1] = (pixel >> 8) & 0xff;
+            image.data[image_idx + 2] = pixel & 0xff;
+            image.data[image_idx + 3] = 255;
+          }
+        }
+        ctx.putImageData(image, 0, 0);
+
+        lua.delete();
+        result.delete();
+      } catch (err) {
+        console.error(err);
+        clearInterval(i);
+        return;
       }
-    }
-    ctx.putImageData(image, 0, 0);
+    }, 100);
   });
 };
