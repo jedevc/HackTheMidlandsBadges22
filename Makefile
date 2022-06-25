@@ -1,5 +1,5 @@
 .PHONY: all prebuild build clean fmt serve
-	
+
 ifeq ($(DEBUG), 1)
 CFLAGS=-g -O0 -s ASSERTIONS=1
 else
@@ -12,10 +12,11 @@ build: prebuild build/index.html build/index.js build/index.css build/badge.js
 
 serve: build
 	sh -c "cd build; python -m http.server"
-	
+
 fmt:
+	clang-format -i ./src/system/*
 	sh -c "$$(yarn bin)/prettier -w ./src"
-	
+
 clean:
 	rm -rf build/*
 
