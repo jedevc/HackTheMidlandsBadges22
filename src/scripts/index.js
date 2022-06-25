@@ -12,35 +12,38 @@ class Badge {
   constructor(lua, titleEl, contentEl, canvasEl) {
     this.lua = lua;
 
-    this.title = titleEl
-    this.content = contentEl
+    this.title = titleEl;
+    this.content = contentEl;
 
-    this.canvas = canvasEl
+    this.canvas = canvasEl;
     this.ctx = this.canvas.getContext("2d");
-    this.buffer = this.ctx.createImageData(this.canvas.width, this.canvas.height);
+    this.buffer = this.ctx.createImageData(
+      this.canvas.width,
+      this.canvas.height
+    );
   }
-  
+
   step() {
-      let result = this.lua.run(program);
-      if (result.err) {
-        throw new Error(result.err);
-      }
+    let result = this.lua.run(program);
+    if (result.err) {
+      throw new Error(result.err);
+    }
 
-      title.innerText = result.title;
-      content.innerText = result.content;
+    title.innerText = result.title;
+    content.innerText = result.content;
 
-      for (let i = 0; i < 64; i++) {
-        for (let j = 0; j < 36; j++) {
-          let pixel = result.pixel(i, j)
-          let idx = 4 * (i + j * this.canvas.width);
-          this.buffer.data[idx + 0] = (pixel >> 16) & 0xff;
-          this.buffer.data[idx + 1] = (pixel >> 8) & 0xff;
-          this.buffer.data[idx + 2] = pixel & 0xff;
-          this.buffer.data[idx + 3] = 255;
-        }
+    for (let i = 0; i < 64; i++) {
+      for (let j = 0; j < 36; j++) {
+        let pixel = result.pixel(i, j);
+        let idx = 4 * (i + j * this.canvas.width);
+        this.buffer.data[idx + 0] = (pixel >> 16) & 0xff;
+        this.buffer.data[idx + 1] = (pixel >> 8) & 0xff;
+        this.buffer.data[idx + 2] = pixel & 0xff;
+        this.buffer.data[idx + 3] = 255;
       }
-      this.ctx.putImageData(this.buffer, 0, 0);
-      result.delete();
+    }
+    this.ctx.putImageData(this.buffer, 0, 0);
+    result.delete();
   }
 }
 
@@ -67,7 +70,7 @@ window.onload = () => {
       if (current - last > delta) {
         console.log("loop");
         try {
-          badge.step()
+          badge.step();
         } catch (err) {
           console.error(err);
           return;
@@ -77,9 +80,9 @@ window.onload = () => {
       } else {
         console.log("skip");
       }
-  
+
       window.requestAnimationFrame(step);
-    }
+    };
 
     window.requestAnimationFrame(step);
   });
