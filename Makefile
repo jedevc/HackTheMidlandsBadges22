@@ -1,4 +1,10 @@
 .PHONY: all prebuild build clean fmt serve
+	
+ifeq ($(DEBUG), 1)
+CFLAGS=-g -O0 -s ASSERTIONS=1
+else
+CFLAGS=-O3
+endif
 
 all: build
 
@@ -11,7 +17,7 @@ fmt:
 	sh -c "$$(yarn bin)/prettier -w ./src"
 	
 clean:
-	rm -rf build/
+	rm -rf build/*
 
 prebuild:
 	mkdir -p build
@@ -20,12 +26,13 @@ lua/liblua.a:
 	sh -c "(cd lua && make all CC='emcc -s WASM=1)"
 
 build/badge.js: src/system/main.cpp lua/liblua.a
-	em++ -Ilua $^ -O3 -o $@ \
+	em++ -Ilua $^ -o $@ \
 		-std=c++17 \
 		-lembind \
+		$(CFLAGS) \
 		-s WASM=1 \
 		-s MODULARIZE=1 \
-		-s ASSERTIONS=1 \
+		-s INITIAL_MEMORY=16MB \
 		-s 'EXPORT_NAME="createBadgeModule"'
 
 build/%.html: src/pages/%.html
