@@ -18,6 +18,9 @@ using namespace emscripten;
 #define BUDGET 100000
 #define BUDGET_STEPS 1000
 
+using std::string;
+using std::vector;
+
 static int rgb(lua_State *L) {
   int n = lua_gettop(L);
   if (n != 3) {
@@ -106,12 +109,12 @@ static int hsl(lua_State *L) {
 
 class LuaResult {
 public:
-  std::string err;
+  string err;
 
-  std::string title;
-  std::string content;
+  string title;
+  string content;
 
-  std::vector<unsigned int> image;
+  vector<unsigned int> image;
   unsigned int image_width;
   unsigned int image_height;
 
@@ -120,7 +123,7 @@ public:
 
 class Lua {
 public:
-  Lua(std::string code) {
+  Lua(string code) {
     state = luaL_newstate();
 
     lua_pushlightuserdata(state, (void *)state);
@@ -204,14 +207,14 @@ private:
 
   LuaResult get_result() {
     lua_getglobal(state, "title");
-    std::string title = lua_tostring(state, -1);
+    string title = lua_tostring(state, -1);
     lua_pop(state, 1);
 
     lua_getglobal(state, "content");
-    std::string content = lua_tostring(state, -1);
+    string content = lua_tostring(state, -1);
     lua_pop(state, 1);
 
-    std::vector<unsigned int> image;
+    vector<unsigned int> image;
     lua_getglobal(state, "image");
     for (int i = 0; i < image_width; i++) {
       lua_pushinteger(state, i);
@@ -244,12 +247,12 @@ private:
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_BINDINGS(my_module) {
   register_vector<unsigned int>("VectorImage");
-  register_vector<std::vector<unsigned int>>("VectorVectorImage");
+  register_vector<vector<unsigned int>>("VectorVectorImage");
   class_<LuaResult>("LuaResult")
       .property("title", &LuaResult::title)
       .property("content", &LuaResult::content)
       .property("err", &LuaResult::err)
       .function("pixel", &LuaResult::pixel);
-  class_<Lua>("Lua").constructor<std::string>().function("run", &Lua::run);
+  class_<Lua>("Lua").constructor<string>().function("run", &Lua::run);
 }
 #endif
