@@ -18,11 +18,6 @@ using namespace emscripten;
 #define BUDGET 100000
 #define BUDGET_STEPS 1000
 
-// TODO:
-//   - parallelize using webworkers?
-//   - actually render as a badge!
-//   - snazzy transitions and animations
-
 static int rgb(lua_State *L) {
   int n = lua_gettop(L);
   if (n != 3) {
