@@ -17,7 +17,7 @@ lua/liblua.a:
 	sh -c "(cd lua && make all CC='emcc -s WASM=1)"
 
 build/badge.js: src/system/main.cpp lua/liblua.a
-	em++ -Ilua $^ -O2 -o $@ \
+	em++ -Ilua $^ -O3 -o $@ \
 		-std=c++17 \
 		-lembind \
 		-s WASM=1 \
