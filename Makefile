@@ -1,4 +1,4 @@
-.PHONY: all prebuild build clean serve
+.PHONY: all prebuild build clean fmt serve
 
 all: build
 
@@ -6,6 +6,9 @@ build: prebuild build/index.html build/index.js build/index.css build/badge.js
 
 serve: build
 	sh -c "cd build; python -m http.server"
+	
+fmt:
+	sh -c "$$(yarn bin)/prettier -w ./src"
 	
 clean:
 	rm -rf build/
