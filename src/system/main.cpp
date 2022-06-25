@@ -1,8 +1,8 @@
 #include <cassert>
 #include <cmath>
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
 
 extern "C" {
 #include "lua.h"
@@ -119,19 +119,21 @@ public:
   std::vector<unsigned int> image;
   unsigned int image_width;
   unsigned int image_height;
-  
-  unsigned int pixel(int x, int y) {
-    return image[x * image_height + y];
-  }
+
+  unsigned int pixel(int x, int y) { return image[x * image_height + y]; }
 };
 
 class Lua {
 public:
-  Lua() {
+  Lua(std::string code) {
     state = luaL_newstate();
 
     lua_pushlightuserdata(state, (void *)state);
     lua_pushlightuserdata(state, (void *)this);
+    lua_settable(state, LUA_REGISTRYINDEX);
+
+    lua_pushlightuserdata(state, (void *)((long long)state + 1));
+    luaL_loadstring(state, code.c_str());
     lua_settable(state, LUA_REGISTRYINDEX);
 
     lua_pushstring(state, "HackTheMidlands v7");
@@ -173,20 +175,25 @@ public:
     state = NULL;
   }
 
-  LuaResult run(std::string script) {
+  LuaResult run() {
+    lua_pushlightuserdata(state, (void *)((long long)state + 1));
+    lua_gettable(state, LUA_REGISTRYINDEX);
+
     cost = 0;
 
-    int code = luaL_dostring(state, script.c_str());
+    int code = lua_pcall(state, 0, LUA_MULTRET, 0);
     if (code != 0) {
       size_t len = 0;
       const char *value = lua_tolstring(state, lua_gettop(state), &len);
       return LuaResult{.err{value}};
     }
-    
+
     LuaResult result = get_result();
+    lua_settop(state, 0);
+    lua_gc(state, LUA_GCCOLLECT, 0);
     return result;
   }
-  
+
 private:
   static void hook(lua_State *L, lua_Debug *ar) {
     lua_pushlightuserdata(L, (void *)L);
@@ -224,11 +231,11 @@ private:
     }
 
     return LuaResult{
-      .title{title},
-      .content{content},
-      .image{image},
-      .image_width = image_width,
-      .image_height = image_height,
+        .title{title},
+        .content{content},
+        .image{image},
+        .image_width = image_width,
+        .image_height = image_height,
     };
   }
 
@@ -244,12 +251,10 @@ EMSCRIPTEN_BINDINGS(my_module) {
   register_vector<unsigned int>("VectorImage");
   register_vector<std::vector<unsigned int>>("VectorVectorImage");
   class_<LuaResult>("LuaResult")
-    .property("title", &LuaResult::title)
-    .property("content", &LuaResult::content)
-    .property("err", &LuaResult::err)
-    .function("pixel", &LuaResult::pixel);
-  class_<Lua>("Lua")
-    .constructor<>()
-    .function("run", &Lua::run);
+      .property("title", &LuaResult::title)
+      .property("content", &LuaResult::content)
+      .property("err", &LuaResult::err)
+      .function("pixel", &LuaResult::pixel);
+  class_<Lua>("Lua").constructor<std::string>().function("run", &Lua::run);
 }
 #endif

@@ -24,7 +24,7 @@ class Badge {
   }
 
   step() {
-    let result = this.lua.run(program);
+    let result = this.lua.run();
     if (result.err) {
       throw new Error(result.err);
     }
@@ -48,42 +48,53 @@ class Badge {
 }
 
 window.onload = () => {
-  const fps = 100;
-  const delta = 1000.0 / fps;
-
   createBadgeModule().then((Module) => {
-    let lua = new Module.Lua();
+    let lua = new Module.Lua(program);
     let title = document.querySelector("#title");
     let content = document.querySelector("#content");
     let canvas = document.querySelector("#image");
     let badge = new Badge(lua, title, content, canvas);
 
+    const fps = 60;
+    const delta = 1000.0 / fps;
+
     let start, last;
+    let lagCount = 0;
+
     const step = (current) => {
-      if (start === undefined) {
-        start = current;
-      }
-      if (last === undefined) {
-        last = current;
+      if (start === undefined) start = current;
+      if (last === undefined) last = current;
+      const diff = current - last;
+
+      // detect and report lag
+      if (lagCount !== null) {
+        if (diff > delta * 1.2) {
+          lagCount++;
+          if (lagCount > 100) {
+            console.warn(
+              `lag detected! fps target is ${fps} but getting ${(
+                1000 / diff
+              ).toFixed(2)}`
+            );
+            lagCount = null;
+          }
+        } else {
+          lagCount = 0;
+        }
       }
 
-      if (current - last > delta) {
-        console.log("loop");
+      if (diff > delta) {
         try {
           badge.step();
         } catch (err) {
           console.error(err);
           return;
         }
-
         last = current;
-      } else {
-        console.log("skip");
       }
 
       window.requestAnimationFrame(step);
     };
-
     window.requestAnimationFrame(step);
   });
 };
