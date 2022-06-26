@@ -188,10 +188,10 @@ public:
 
     lua_newtable(state);
     for (int i = 0; i < width; i++) {
-      lua_pushinteger(state, i);
+      lua_pushinteger(state, i + 1);
       lua_newtable(state);
       for (int j = 0; j < height; j++) {
-        lua_pushinteger(state, j);
+        lua_pushinteger(state, j + 1);
         lua_pushinteger(state, 0);
         lua_settable(state, -3);
       }
@@ -252,10 +252,10 @@ private:
       data.reserve(img.width * img.height);
       lua_getglobal(state, name.c_str());
       for (int i = 0; i < img.width; i++) {
-        lua_pushinteger(state, i);
+        lua_pushinteger(state, i + 1);
         lua_gettable(state, -2);
         for (int j = 0; j < img.height; j++) {
-          lua_pushinteger(state, j);
+          lua_pushinteger(state, j + 1);
           lua_gettable(state, -2);
           data.push_back(lua_tointeger(state, -1));
           lua_pop(state, 1);

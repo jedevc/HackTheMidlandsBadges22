@@ -1,9 +1,9 @@
 let program = `
-title = "Title!"
-content = "Content!"
-k = ((k or 0) + 1) % 64
-for i=0,63 do
-  for j=0,35 do
+title = "John Doe"
+content = "Hello I am John Doe!"
+k = ((k or 0) + 1) % image_width
+for i=1,image_width do
+  for j=1,image_height do
     x = i / j * k
     image[i][j] = hsl(x-math.floor(x), 50, 50)
   end
