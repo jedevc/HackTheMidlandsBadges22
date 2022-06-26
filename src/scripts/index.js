@@ -1,11 +1,11 @@
 let program = `
 title = "John Doe"
 content = "Hello I am John Doe!"
-k = ((k or 0) + 1) % image_width
+k = (k or 0) + 1
 for i=1,image_width do
   for j=1,image_height do
-    x = i / j * k
-    image[i][j] = hsl(x-math.floor(x), 50, 50)
+    x = (i + j + k) % 100
+    image[i][j] = hsl(x / 100, 0.7, 0.5)
   end
 end
 `;
@@ -37,6 +37,8 @@ class Badge {
         default:
           throw new Error(`unknown property type ${prop.type}`);
       }
+
+      el.classList.add("ready");
     }
   }
 
@@ -70,7 +72,7 @@ class Badge {
   }
 }
 
-window.onload = () => {
+window.addEventListener("DOMContentLoaded", () => {
   createBadgeModule().then((Module) => {
     let badge = new Badge(Module, program, document, [
       { type: "text", name: "title" },
@@ -119,4 +121,4 @@ window.onload = () => {
     };
     window.requestAnimationFrame(step);
   });
-};
+});

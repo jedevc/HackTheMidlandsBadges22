@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <map>
@@ -53,7 +54,7 @@ static int hsl(lua_State *L) {
 
   double h, s, l;
   if (lua_isinteger(L, 1)) {
-    h = (lua_tointeger(L, 1) % 360);
+    h = lua_tointeger(L, 1) % 360;
   } else {
     h = fmod(lua_tonumber(L, 1), 1) * 360;
   }
@@ -62,11 +63,14 @@ static int hsl(lua_State *L) {
   } else {
     s = lua_tonumber(L, 2);
   }
-  if (lua_isinteger(L, 2)) {
+  s = std::clamp(s, 0.0, 1.0);
+
+  if (lua_isinteger(L, 3)) {
     l = lua_tointeger(L, 3) / 100.0;
   } else {
     l = lua_tonumber(L, 3);
   }
+  l = std::clamp(l, 0.0, 1.0);
 
   // https://css-tricks.com/converting-color-spaces-in-javascript/#aa-hsl-to-rgb
   double c = (1 - fabs(2 * l - 1)) * s;
