@@ -1,4 +1,10 @@
+(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
 
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 
@@ -19,8 +25,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-
-var program = "\ntitle = \"John Doe\"\ncontent = \"Hello I am John Doe!\"\nk = (k or 0) + 1\nfor i=1,image_width do\n  for j=1,image_height do\n    x = (i + j + k) % 100\n    image[i][j] = hsl(x / 100, 0.7, 0.5)\n  end\nend\n";
 
 var Badge = /*#__PURE__*/function () {
   function Badge(module, program, rootEl, props) {
@@ -117,9 +121,21 @@ var Badge = /*#__PURE__*/function () {
   return Badge;
 }();
 
+exports.default = Badge;
+
+},{}],2:[function(require,module,exports){
+"use strict";
+
+var _badge = _interopRequireDefault(require("./badge"));
+
+var _loop = _interopRequireDefault(require("./loop"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var program = "\ntitle = \"John Doe\"\ncontent = \"Hello I am John Doe!\"\nk = (k or 0) + 1\nfor i=1,image_width do\n  for j=1,image_height do\n    x = (i + j + k) % 100\n    image[i][j] = hsl(x / 100, 0.7, 0.5)\n  end\nend\n";
 window.addEventListener("DOMContentLoaded", function () {
   createBadgeModule().then(function (Module) {
-    var badge = new Badge(Module, program, document, [{
+    var badge = new _badge.default(Module, program, document, [{
       type: "text",
       name: "title"
     }, {
@@ -129,44 +145,60 @@ window.addEventListener("DOMContentLoaded", function () {
       type: "image",
       name: "image"
     }]);
-    var fps = 120;
-    var delta = 1000.0 / fps;
-    var start, last;
-    var lagCount = 0;
-
-    var step = function step(current) {
-      if (start === undefined) start = current;
-      if (last === undefined) last = current;
-      var diff = current - last; // detect and report lag
-
-      if (lagCount !== null) {
-        if (diff > delta * 1.2) {
-          lagCount++;
-
-          if (lagCount > 100) {
-            var fpsActual = (1000 / diff).toFixed(2);
-            console.warn("lag detected! fps target is ".concat(fps, " but getting ").concat(fpsActual));
-            lagCount = null;
-          }
-        } else {
-          lagCount = 0;
-        }
-      }
-
-      if (diff > delta) {
-        try {
-          badge.step();
-        } catch (err) {
-          console.error(err);
-          return;
-        }
-
-        last = current;
-      }
-
-      window.requestAnimationFrame(step);
-    };
-
-    window.requestAnimationFrame(step);
+    (0, _loop.default)(function () {
+      return badge.step();
+    });
   });
 });
+
+},{"./badge":1,"./loop":3}],3:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = loop;
+
+function loop(cb) {
+  var fps = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 60;
+  var delta = 1000.0 / fps;
+  var start, last;
+  var lagCount = 0;
+
+  var step = function step(current) {
+    if (start === undefined) start = current;
+    if (last === undefined) last = current;
+    var diff = current - last; // detect and report lag
+
+    if (lagCount !== null) {
+      if (diff > delta * 1.2) {
+        lagCount++;
+
+        if (lagCount > 100) {
+          var fpsActual = (1000 / diff).toFixed(2);
+          console.warn("lag detected! fps target is ".concat(fps, " but getting ").concat(fpsActual));
+          lagCount = null;
+        }
+      } else {
+        lagCount = 0;
+      }
+    }
+
+    if (diff > delta) {
+      try {
+        cb();
+      } catch (err) {
+        console.error(err);
+        return;
+      }
+
+      last = current;
+    }
+
+    window.requestAnimationFrame(step);
+  };
+
+  window.requestAnimationFrame(step);
+}
+
+},{}]},{},[2]);
