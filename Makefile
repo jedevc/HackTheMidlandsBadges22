@@ -14,7 +14,7 @@ serve: build
 	sh -c "cd build; python -m http.server"
 
 fmt:
-	clang-format -i ./src/system/*
+	sh -c "clang-format -i ./src/system/**/*.cpp"
 	sh -c "$$(yarn bin)/prettier -w ./src"
 
 clean:
@@ -26,7 +26,7 @@ prebuild:
 lua/liblua.a:
 	sh -c "(cd lua && make all CC='emcc -s WASM=1)"
 
-build/badge.js: src/system/main.cpp lua/liblua.a
+build/badge.js: $(shell find src/system/ -type f -name *.cpp) lua/liblua.a
 	em++ -Ilua $^ -o $@ \
 		-std=c++17 \
 		-lembind \
