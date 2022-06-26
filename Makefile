@@ -40,6 +40,6 @@ build/badge.js: $(shell find src/system/ -type f -name *.cpp) lua/liblua.a
 build/%.html: src/pages/%.html
 	cp $< $@
 build/%.js: src/scripts/%.js
-	sh -c "$$(yarn bin)/babel $< --out-file $@ --presets=@babel/preset-env"
+	sh -c "$$(yarn bin)/browserify $< -o $@ -t [ babelify --presets [ @babel/preset-env ] ]"
 build/%.css: src/styles/%.scss
 	sh -c "$$(yarn bin)/sass $< $@"
