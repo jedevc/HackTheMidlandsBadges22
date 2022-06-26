@@ -33,7 +33,7 @@ build/badge.js: src/system/main.cpp lua/liblua.a
 		$(CFLAGS) \
 		-s WASM=1 \
 		-s MODULARIZE=1 \
-		-s INITIAL_MEMORY=16MB \
+		-s INITIAL_MEMORY=8MB \
 		-s 'EXPORT_NAME="createBadgeModule"'
 
 build/%.html: src/pages/%.html

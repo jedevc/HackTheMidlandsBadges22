@@ -1,4 +1,6 @@
 let program = `
+title = "Title!"
+content = "Content!"
 k = ((k or 0) + 1) % 64
 for i=0,63 do
   for j=0,35 do
@@ -9,18 +11,33 @@ end
 `;
 
 class Badge {
-  constructor(lua, titleEl, contentEl, canvasEl) {
-    this.lua = lua;
+  constructor(module, program, rootEl, props) {
+    this.lua = new module.Lua(program);
 
-    this.title = titleEl;
-    this.content = contentEl;
+    this.texts = {};
+    this.images = {};
 
-    this.canvas = canvasEl;
-    this.ctx = this.canvas.getContext("2d");
-    this.buffer = this.ctx.createImageData(
-      this.canvas.width,
-      this.canvas.height
-    );
+    for (let prop of props) {
+      let el = rootEl.getElementById(prop.name);
+      if (el === undefined) {
+        throw new Error(`could not find ${prop.name} in ${rootEl}`);
+      }
+
+      switch (prop.type) {
+        case "text":
+          this.texts[prop.name] = el;
+          this.lua.export_text(prop.name);
+          break;
+        case "image":
+          let ctx = el.getContext("2d");
+          let buffer = ctx.createImageData(el.width, el.height);
+          this.images[prop.name] = [el, ctx, buffer];
+          this.lua.export_image(prop.name, el.width, el.height);
+          break;
+        default:
+          throw new Error(`unknown property type ${prop.type}`);
+      }
+    }
   }
 
   step() {
@@ -29,33 +46,39 @@ class Badge {
       throw new Error(result.err);
     }
 
-    title.innerText = result.title;
-    content.innerText = result.content;
-
-    for (let i = 0; i < 64; i++) {
-      for (let j = 0; j < 36; j++) {
-        let pixel = result.pixel(i, j);
-        let idx = 4 * (i + j * this.canvas.width);
-        this.buffer.data[idx + 0] = (pixel >> 16) & 0xff;
-        this.buffer.data[idx + 1] = (pixel >> 8) & 0xff;
-        this.buffer.data[idx + 2] = pixel & 0xff;
-        this.buffer.data[idx + 3] = 255;
-      }
+    for (const [name, el] of Object.entries(this.texts)) {
+      el.innerText = result.pop_text(name);
     }
-    this.ctx.putImageData(this.buffer, 0, 0);
+
+    for (const [name, [el, ctx, buffer]] of Object.entries(this.images)) {
+      let img = result.pop_image(name);
+      for (let i = 0; i < img.width; i++) {
+        for (let j = 0; j < img.height; j++) {
+          let pixel = img.pixel(i, j);
+          let idx = 4 * (i + j * img.width);
+          buffer.data[idx + 0] = (pixel >> 16) & 0xff;
+          buffer.data[idx + 1] = (pixel >> 8) & 0xff;
+          buffer.data[idx + 2] = pixel & 0xff;
+          buffer.data[idx + 3] = 255;
+        }
+      }
+      ctx.putImageData(buffer, 0, 0);
+      img.delete();
+    }
+
     result.delete();
   }
 }
 
 window.onload = () => {
   createBadgeModule().then((Module) => {
-    let lua = new Module.Lua(program);
-    let title = document.querySelector("#title");
-    let content = document.querySelector("#content");
-    let canvas = document.querySelector("#image");
-    let badge = new Badge(lua, title, content, canvas);
+    let badge = new Badge(Module, program, document, [
+      { type: "text", name: "title" },
+      { type: "text", name: "content" },
+      { type: "image", name: "image" },
+    ]);
 
-    const fps = 60;
+    const fps = 120;
     const delta = 1000.0 / fps;
 
     let start, last;
@@ -71,10 +94,9 @@ window.onload = () => {
         if (diff > delta * 1.2) {
           lagCount++;
           if (lagCount > 100) {
+            const fpsActual = (1000 / diff).toFixed(2);
             console.warn(
-              `lag detected! fps target is ${fps} but getting ${(
-                1000 / diff
-              ).toFixed(2)}`
+              `lag detected! fps target is ${fps} but getting ${fpsActual}`
             );
             lagCount = null;
           }

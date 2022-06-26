@@ -1,6 +1,7 @@
 #include <cassert>
 #include <cmath>
-#include <optional>
+#include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -18,6 +19,7 @@ using namespace emscripten;
 #define BUDGET 100000
 #define BUDGET_STEPS 1000
 
+using std::map;
 using std::string;
 using std::vector;
 
@@ -107,18 +109,43 @@ static int hsl(lua_State *L) {
   return 1;
 }
 
+class Image {
+public:
+  Image() {}
+  Image(unsigned int width_, unsigned int height_, vector<unsigned int> data_)
+      : width(width_), height(height_), data(data_) {}
+
+  unsigned int width;
+  unsigned int height;
+  unsigned int pixel(int x, int y) { return data[x * height + y]; }
+
+private:
+  vector<unsigned int> data;
+};
+
 class LuaResult {
 public:
   string err;
 
-  string title;
-  string content;
+  LuaResult() : err("") {}
+  LuaResult(string err_) : err(err_) {}
 
-  vector<unsigned int> image;
-  unsigned int image_width;
-  unsigned int image_height;
+  void push_text(string key, string value) { texts.emplace(key, value); }
+  string pop_text(string key) {
+    string result = texts.at(key);
+    texts.erase(key);
+    return result;
+  }
+  void push_image(string key, Image value) { images.emplace(key, value); }
+  Image pop_image(string key) {
+    Image result = images.at(key);
+    texts.erase(key);
+    return result;
+  }
 
-  unsigned int pixel(int x, int y) { return image[x * image_height + y]; }
+private:
+  map<string, string> texts;
+  map<string, Image> images;
 };
 
 class Lua {
@@ -130,39 +157,15 @@ public:
     lua_pushlightuserdata(state, (void *)this);
     lua_settable(state, LUA_REGISTRYINDEX);
 
+    // HACK!!! avoid conversions
     lua_pushlightuserdata(state, (void *)((long long)state + 1));
     luaL_loadstring(state, code.c_str());
     lua_settable(state, LUA_REGISTRYINDEX);
-
-    lua_pushstring(state, "HackTheMidlands v7");
-    lua_setglobal(state, "title");
-
-    lua_pushstring(state, "Lorem Ipsum");
-    lua_setglobal(state, "content");
-
-    lua_pushinteger(state, image_width);
-    lua_setglobal(state, "width");
-
-    lua_pushinteger(state, image_height);
-    lua_setglobal(state, "height");
 
     lua_pushcfunction(state, rgb);
     lua_setglobal(state, "rgb");
     lua_pushcfunction(state, hsl);
     lua_setglobal(state, "hsl");
-
-    lua_newtable(state);
-    for (int i = 0; i < image_width; i++) {
-      lua_pushinteger(state, i);
-      lua_newtable(state);
-      for (int j = 0; j < image_height; j++) {
-        lua_pushinteger(state, j);
-        lua_pushinteger(state, 0);
-        lua_settable(state, -3);
-      }
-      lua_settable(state, -3);
-    }
-    lua_setglobal(state, "image");
 
     luaL_openlibs(state);
     lua_sethook(state, hook, LUA_MASKCOUNT, BUDGET_STEPS);
@@ -171,6 +174,36 @@ public:
   ~Lua() {
     lua_close(state);
     state = NULL;
+  }
+
+  void export_text(string name) {
+    texts.push_back(name);
+
+    lua_pushstring(state, "");
+    lua_setglobal(state, name.c_str());
+  }
+
+  void export_image(string name, unsigned int width, unsigned int height) {
+    images.emplace(name, Image(width, height, vector<unsigned int>()));
+
+    lua_newtable(state);
+    for (int i = 0; i < width; i++) {
+      lua_pushinteger(state, i);
+      lua_newtable(state);
+      for (int j = 0; j < height; j++) {
+        lua_pushinteger(state, j);
+        lua_pushinteger(state, 0);
+        lua_settable(state, -3);
+      }
+      lua_settable(state, -3);
+    }
+    lua_setglobal(state, name.c_str());
+
+    lua_pushinteger(state, width);
+    lua_setglobal(state, (name + "_width").c_str());
+
+    lua_pushinteger(state, height);
+    lua_setglobal(state, (name + "_height").c_str());
   }
 
   LuaResult run() {
@@ -183,7 +216,7 @@ public:
     if (code != 0) {
       size_t len = 0;
       const char *value = lua_tolstring(state, lua_gettop(state), &len);
-      return LuaResult{.err{value}};
+      return LuaResult(value);
     }
 
     LuaResult result = get_result();
@@ -206,53 +239,61 @@ private:
   }
 
   LuaResult get_result() {
-    lua_getglobal(state, "title");
-    string title = lua_tostring(state, -1);
-    lua_pop(state, 1);
+    LuaResult result;
 
-    lua_getglobal(state, "content");
-    string content = lua_tostring(state, -1);
-    lua_pop(state, 1);
-
-    vector<unsigned int> image;
-    lua_getglobal(state, "image");
-    for (int i = 0; i < image_width; i++) {
-      lua_pushinteger(state, i);
-      lua_gettable(state, -2);
-      for (int j = 0; j < image_height; j++) {
-        lua_pushinteger(state, j);
-        lua_gettable(state, -2);
-        image.push_back(lua_tointeger(state, -1));
-        lua_pop(state, 1);
-      }
+    for (auto name : texts) {
+      lua_getglobal(state, name.c_str());
+      result.push_text(name, lua_tostring(state, -1));
       lua_pop(state, 1);
     }
 
-    return LuaResult{
-        .title{title},
-        .content{content},
-        .image{image},
-        .image_width = image_width,
-        .image_height = image_height,
-    };
+    for (auto &&[name, img] : images) {
+      vector<unsigned int> data;
+      data.reserve(img.width * img.height);
+      lua_getglobal(state, name.c_str());
+      for (int i = 0; i < img.width; i++) {
+        lua_pushinteger(state, i);
+        lua_gettable(state, -2);
+        for (int j = 0; j < img.height; j++) {
+          lua_pushinteger(state, j);
+          lua_gettable(state, -2);
+          data.push_back(lua_tointeger(state, -1));
+          lua_pop(state, 1);
+        }
+        lua_pop(state, 1);
+      }
+      lua_pop(state, 1);
+
+      result.push_image(name, Image(img.width, img.height, data));
+    }
+
+    return result;
   }
 
   lua_State *state = NULL;
   int cost = 0;
 
-  unsigned int image_width = 64;
-  unsigned int image_height = 36;
+  vector<string> texts;
+  map<string, Image> images;
 };
 
 #ifdef __EMSCRIPTEN__
 EMSCRIPTEN_BINDINGS(my_module) {
   register_vector<unsigned int>("VectorImage");
-  register_vector<vector<unsigned int>>("VectorVectorImage");
+  register_map<string, string>("StringStringMap");
+  register_map<string, Image>("StringImageMap");
+  class_<Image>("Image")
+      .property("width", &Image::width)
+      .property("height", &Image::height)
+      .function("pixel", &Image::pixel);
   class_<LuaResult>("LuaResult")
-      .property("title", &LuaResult::title)
-      .property("content", &LuaResult::content)
       .property("err", &LuaResult::err)
-      .function("pixel", &LuaResult::pixel);
-  class_<Lua>("Lua").constructor<string>().function("run", &Lua::run);
+      .function("pop_text", &LuaResult::pop_text)
+      .function("pop_image", &LuaResult::pop_image);
+  class_<Lua>("Lua")
+      .constructor<string>()
+      .function("export_text", &Lua::export_text)
+      .function("export_image", &Lua::export_image)
+      .function("run", &Lua::run);
 }
 #endif
