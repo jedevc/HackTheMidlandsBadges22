@@ -1,0 +1,5 @@
+/build/
+/node_modules/
+/lua/lua
+/lua/*.o
+/lua/*.a

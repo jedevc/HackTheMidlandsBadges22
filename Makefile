@@ -1,4 +1,4 @@
-.PHONY: all prebuild build build-emscripten build-site clean fmt serve
+.PHONY: all clean fmt serve prebuild build build-emscripten build-site patch-emscripten
 
 ifeq ($(DEBUG), 1)
 CFLAGS=-g -O0 -s ASSERTIONS=1
@@ -7,12 +7,15 @@ CFLAGS=-O3
 endif
 
 all: build
-build: build-emscripten build-site
+build: patch-emscripten build-emscripten build-site
 build-emscripten: prebuild build/badge.emscripten.js
 build-site: prebuild build/index.html build/index.js build/index.css
 
 serve: build
 	sh -c "cd build; python -m http.server"
+
+patch-emscripten:
+	sh -c "cd lua && git am -3 ../lua_patches/*"
 
 fmt:
 	sh -c "clang-format -i ./src/system/**/*.cpp"
@@ -20,12 +23,13 @@ fmt:
 
 clean:
 	rm -rf build/*
+	make -C lua clean
 
 prebuild:
 	mkdir -p build
 
 lua/liblua.a:
-	sh -c "(cd lua && make all CC='emcc -s WASM=1')"
+	make -C lua all CC='emcc -s WASM=1'
 
 build/badge.emscripten.js: $(shell find src/system/ -type f -name *.cpp) lua/liblua.a
 	em++ -Ilua $^ -o $@ \
