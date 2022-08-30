@@ -9,7 +9,7 @@ COPY lua /app/lua
 COPY lua_patches /app/patches
 RUN git am -3 ../patches/*
 
-FROM emscripten/emsdk:latest as emscripten
+FROM emscripten/emsdk:3.1.15 as emscripten
 
 WORKDIR /app/
 COPY Makefile .

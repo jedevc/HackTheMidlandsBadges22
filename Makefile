@@ -8,7 +8,7 @@ endif
 
 all: build
 build: build-emscripten build-site
-build-emscripten: prebuild build/badge.js
+build-emscripten: prebuild build/badge.emscripten.js
 build-site: prebuild build/index.html build/index.js build/index.css
 
 serve: build
@@ -27,7 +27,7 @@ prebuild:
 lua/liblua.a:
 	sh -c "(cd lua && make all CC='emcc -s WASM=1')"
 
-build/badge.js: $(shell find src/system/ -type f -name *.cpp) lua/liblua.a
+build/badge.emscripten.js: $(shell find src/system/ -type f -name *.cpp) lua/liblua.a
 	em++ -Ilua $^ -o $@ \
 		-std=c++17 \
 		-lembind \
