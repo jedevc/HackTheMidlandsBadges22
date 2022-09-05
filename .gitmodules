@@ -1,3 +1,6 @@
-[submodule "lua"]
-	path = lua
+[submodule "badge-view"]
+	path = vendor/view
+	url = git@github.com:jedevc/badge-view.git
+[submodule "vendor/lua"]
+	path = vendor/lua
 	url = git@github.com:lua/lua.git

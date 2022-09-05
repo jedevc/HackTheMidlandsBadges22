@@ -6,7 +6,7 @@ export default class Badge {
     this.images = {};
 
     for (let prop of props) {
-      let el = rootEl.getElementById(prop.name);
+      let el = rootEl.querySelector(prop.selector);
       if (el === undefined) {
         throw new Error(`could not find ${prop.name} in ${rootEl}`);
       }
