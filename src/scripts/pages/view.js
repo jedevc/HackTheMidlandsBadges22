@@ -1,6 +1,6 @@
 import React from "react";
 
-import Badge from "./badge";
+import Badge from "../components/badge";
 
 const defaultProgram = `
 title = "John Doe"

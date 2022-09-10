@@ -1,8 +1,8 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-import View from "./view";
-import Editor from "./editor";
+import View from "./pages/view";
+import Editor from "./pages/editor";
 
 const App = () => {
   return (

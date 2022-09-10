@@ -1,7 +1,10 @@
 import React, { useState } from "react";
 
-import Badge from "./badge";
+import Badge from "../components/badge";
 import Monaco from "@monaco-editor/react";
+
+import Button from "../components/button";
+import { FaGlasses, FaSave } from 'react-icons/fa';
 
 const defaultProgram = `
 title = "John Doe"
@@ -23,6 +26,10 @@ const Editor = () => {
 
   return (
     <div className="editor">
+      <div className="toolbar-pane">
+        <Button text="Save" icon={<FaSave />} color="#3b66fa" />
+        <Button text="View" icon={<FaGlasses />} color="#ff7365" link="/" />
+      </div>
       <div className="editor-pane">
         <Monaco
           value={program}
