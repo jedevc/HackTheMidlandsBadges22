@@ -1,9 +1,10 @@
 export default class Badge {
   constructor(module, program, rootEl, props) {
-    this.lua = new module.Lua(program);
+    this.lua = new module.Lua();
 
     this.texts = {};
     this.images = {};
+    this.errors = {};
 
     for (let prop of props) {
       let el = rootEl.querySelector(prop.selector);
@@ -22,17 +23,28 @@ export default class Badge {
           this.images[prop.name] = [el, ctx, buffer];
           this.lua.export_image(prop.name, el.width, el.height);
           break;
+        case "error":
+          this.errors[prop.name] = el;
+          break;
         default:
           throw new Error(`unknown property type ${prop.type}`);
       }
 
       el.classList.add("ready");
     }
+
+    let result = this.lua.parse(program);
+    if (result.err) {
+      this.setError(result.err);
+      throw new Error(result.err);
+    }
+    result.delete();
   }
 
   step() {
     let result = this.lua.run();
     if (result.err) {
+      this.setError(result.err);
       throw new Error(result.err);
     }
 
@@ -58,10 +70,17 @@ export default class Badge {
 
     result.delete();
   }
-  
+
   delete() {
     if (this.lua === null) return;
     this.lua.delete();
     this.lua = null;
+  }
+
+  setError(message) {
+    for (let [name, el] of Object.entries(this.errors)) {
+      console.log(el, message);
+      el.innerText = message;
+    }
   }
 }

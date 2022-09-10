@@ -8,7 +8,7 @@ import loop from "./loop";
 
 let badgeModule = null;
 
-const Badge = ({program}) => {
+const Badge = ({ program }) => {
   const [cancel, setCancel] = useState(null);
   const [el, setEl] = useState(null);
 
@@ -20,6 +20,7 @@ const Badge = ({program}) => {
         { type: "text", name: "title", selector: ".title" },
         { type: "text", name: "content", selector: ".content" },
         { type: "image", name: "image", selector: ".image" },
+        { type: "error", name: "error", selector: ".error" },
       ]);
       const loopCancel = loop(() => b.step());
       setCancel(() => () => {
@@ -55,6 +56,7 @@ const Badge = ({program}) => {
         <span className="title"></span>
         <span className="content"></span>
         <span className="citation">HackTheMidlands 7.0</span>
+        <div className="error">Ahhh</div>
       </div>
     </div>
   );

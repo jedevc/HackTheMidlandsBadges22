@@ -4,7 +4,7 @@ import Badge from "../components/badge";
 import Monaco from "@monaco-editor/react";
 
 import Button from "../components/button";
-import { FaGlasses, FaSave } from 'react-icons/fa';
+import { FaGlasses, FaSave } from "react-icons/fa";
 
 const defaultProgram = `
 title = "John Doe"
@@ -22,7 +22,7 @@ const Editor = () => {
   let [program, setProgram] = useState(defaultProgram);
   const handleChange = (value) => {
     setProgram(value);
-  }
+  };
 
   return (
     <div className="editor">
@@ -31,11 +31,7 @@ const Editor = () => {
         <Button text="View" icon={<FaGlasses />} color="#ff7365" link="/" />
       </div>
       <div className="editor-pane">
-        <Monaco
-          value={program}
-          language="lua"
-          onChange={handleChange}
-        />
+        <Monaco value={program} language="lua" onChange={handleChange} />
       </div>
       <div className="badge-pane">
         <Badge program={program} />

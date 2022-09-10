@@ -63,19 +63,25 @@ private:
   map<string, Image> images;
 };
 
+static int traceback(lua_State *L) {
+    lua_getglobal(L, "debug");
+    lua_getfield(L, -1, "traceback");
+    lua_pushvalue(L, 1);
+    lua_pushinteger(L, 2);
+    lua_call(L, 2, 1);
+    fprintf(stderr, "%s\n", lua_tostring(L, -1));
+    return 1;
+}
+
 class Lua {
 public:
-  Lua(string code) {
+  Lua() {
     state = luaL_newstate();
 
     lua_pushlightuserdata(state, (void *)state);
     lua_pushlightuserdata(state, (void *)this);
     lua_settable(state, LUA_REGISTRYINDEX);
 
-    // HACK!!! avoid conversions
-    lua_pushlightuserdata(state, (void *)((long long)state + 1));
-    luaL_loadstring(state, code.c_str());
-    lua_settable(state, LUA_REGISTRYINDEX);
 
     lua_pushcfunction(state, rgb);
     lua_setglobal(state, "rgb");
@@ -121,20 +127,41 @@ public:
     lua_setglobal(state, (name + "_height").c_str());
   }
 
+  LuaResult parse(string program) {
+    LuaResult result;
+
+    lua_pushlightuserdata(state, (void *)((long long)state + 1));
+    int code = luaL_loadstring(state, program.c_str());
+    if (code != 0) {
+      const char *value = lua_tostring(state, -1);
+      printf("%s\n", value);
+      result = LuaResult(value);
+    }
+    lua_settable(state, LUA_REGISTRYINDEX);
+
+    lua_settop(state, 0);
+    lua_gc(state, LUA_GCCOLLECT, 0);
+    return result;
+  }
+
   LuaResult run() {
+    lua_pushcfunction(state, traceback);
+
     lua_pushlightuserdata(state, (void *)((long long)state + 1));
     lua_gettable(state, LUA_REGISTRYINDEX);
 
     cost = 0;
-
-    int code = lua_pcall(state, 0, LUA_MULTRET, 0);
+    
+    LuaResult result;
+    int code = lua_pcall(state, 0, LUA_MULTRET, -2);
     if (code != 0) {
-      size_t len = 0;
-      const char *value = lua_tolstring(state, lua_gettop(state), &len);
-      return LuaResult(value);
+      const char *value = lua_tostring(state, -1);
+      printf("%s\n", value);
+      result = LuaResult(value);
+    } else {
+      result = get_result();
     }
 
-    LuaResult result = get_result();
     lua_settop(state, 0);
     lua_gc(state, LUA_GCCOLLECT, 0);
     return result;
@@ -206,9 +233,10 @@ EMSCRIPTEN_BINDINGS(my_module) {
       .function("pop_text", &LuaResult::pop_text)
       .function("pop_image", &LuaResult::pop_image);
   class_<Lua>("Lua")
-      .constructor<string>()
+      .constructor<>()
       .function("export_text", &Lua::export_text)
       .function("export_image", &Lua::export_image)
+      .function("parse", &Lua::parse)
       .function("run", &Lua::run);
 }
 #endif

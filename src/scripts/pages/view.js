@@ -15,9 +15,7 @@ end
 `;
 
 const View = () => {
-  return (
-    <Badge program={defaultProgram} />
-  );
+  return <Badge program={defaultProgram} />;
 };
 
 export default View;
