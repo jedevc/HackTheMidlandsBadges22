@@ -81,6 +81,7 @@ module.exports = {
   },
   devServer: {
     static: "./build/",
+    historyApiFallback: true,
     client: {
       overlay: {
         warnings: false,
