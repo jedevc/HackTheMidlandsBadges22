@@ -58,4 +58,10 @@ export default class Badge {
 
     result.delete();
   }
+  
+  delete() {
+    if (this.lua === null) return;
+    this.lua.delete();
+    this.lua = null;
+  }
 }

@@ -3,8 +3,11 @@ export default function loop(cb, fps = 60) {
 
   let start, last;
   let lagCount = 0;
-
+  
+  let cancelled = false;
+  
   const step = (current) => {
+    if (cancelled) return;
     if (start === undefined) start = current;
     if (last === undefined) last = current;
     const diff = current - last;
@@ -38,4 +41,8 @@ export default function loop(cb, fps = 60) {
     window.requestAnimationFrame(step);
   };
   window.requestAnimationFrame(step);
+  
+  return () => {
+    cancelled = true;
+  }
 }

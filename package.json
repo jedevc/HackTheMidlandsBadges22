@@ -1,7 +1,7 @@
 {
   "scripts": {
     "build": "webpack build",
-    "serve": "webpack serve"
+    "serve": "NODE_ENV=development webpack serve"
   },
   "devDependencies": {
     "@babel/core": "^7.18.13",
@@ -21,7 +21,7 @@
     "webpack-dev-server": "^4.10.1"
   },
   "dependencies": {
-    "monaco-editor": "^0.34.0",
+    "@monaco-editor/react": "^4.4.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   }
