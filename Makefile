@@ -1,28 +1,32 @@
-.PHONY: all clean fmt serve prebuild build build-emscripten patch-emscripten
+.PHONY: all build watch serve clean fmt internal-prebuild internal-build-emscripten internal-patch-emscripten
 
 all: build
 
-build: patch-emscripten build-emscripten build-yarn
-build-emscripten: prebuild tmp/badge.emscripten.js
-build-yarn:
+
+build:
 	yarn build
 
-patch-emscripten:
-	sh -c "cd vendor/lua && git am -3 ../../patches/lua/*"
-	
-serve: patch-emscripten build-emscripten
-	yarn serve
+watch:
+	yarn run watch
+
+serve:
+	yarn run serve
 
 fmt:
 	sh -c "clang-format -i ./src/system/**/*.cpp"
 	sh -c "$$(yarn bin)/prettier -w ./src"
 
-prebuild:
-	mkdir -p build tmp
-
 clean:
 	make -C vendor/lua clean
 	rm -rf build/* tmp/*
+
+internal-build-emscripten: internal-prebuild internal-patch-emscripten tmp/badge.emscripten.js
+
+internal-patch-emscripten:
+	sh -c "cd vendor/lua && git am -3 ../../patches/lua/*"
+
+internal-prebuild:
+	mkdir -p build tmp
 
 ifeq ($(DEBUG), 1)
 CFLAGS=-g -O0 -s ASSERTIONS=1

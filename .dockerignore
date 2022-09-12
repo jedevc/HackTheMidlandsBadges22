@@ -1,5 +1,8 @@
 /build/
-/node_modules/
+/tmp/
 /lua/lua
 /lua/*.o
 /lua/*.a
+
+/yarn-error.log
+/node_modules/

@@ -1,6 +1,9 @@
 const path = require("path");
+const spawn = require("child_process").spawnSync;
+
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const WatchExternalFilesPlugin = require('webpack-watch-files-plugin').default;
 
 const isDevelopment = process.env.NODE_ENV === "development";
 
@@ -25,7 +28,7 @@ module.exports = {
         loader: "babel-loader",
         exclude: [/node_modules/, /public/],
         options: {
-          presets: ['@babel/preset-env', '@babel/preset-react']
+          presets: ["@babel/preset-env", "@babel/preset-react"],
         },
       },
       {
@@ -72,9 +75,9 @@ module.exports = {
       {
         test: /\.wasm$/,
         type: "asset/inline",
-        loader: 'file-loader',
+        loader: "file-loader",
         options: {
-          name: '[name].[ext]',
+          name: "[name].[ext]",
         },
       },
     ],
@@ -85,7 +88,7 @@ module.exports = {
     client: {
       overlay: {
         warnings: false,
-        errors: true
+        errors: true,
       },
     },
   },
@@ -93,6 +96,11 @@ module.exports = {
     runtimeChunk: "single",
   },
   plugins: [
+    new WatchExternalFilesPlugin({
+      files: [
+        './src/system/**/*',
+      ]
+    }),
     new HtmlWebpackPlugin({
       template: "./src/pages/index.html",
     }),
@@ -100,5 +108,18 @@ module.exports = {
       filename: isDevelopment ? "[name].css" : "[name].[fullhash].css",
       chunkFilename: isDevelopment ? "[id].css" : "[id].[fullhash].css",
     }),
+    {
+      apply: (compiler) => {
+        compiler.hooks.compilation.tap("AfterEmitPlugin", () => {
+          const child = spawn("make", ["internal-build-emscripten"], {stdio: "inherit"});
+          if (child.error) {
+            return child.error;
+          }
+          if (child.status !== null && child.status !== 0) {
+            return new Error(`failed with status code ${child.status}`);
+          }
+        });
+      },
+    },
   ],
 };
