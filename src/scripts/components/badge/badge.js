@@ -1,5 +1,5 @@
 export default class Badge {
-  constructor(module, program, rootEl, props) {
+  constructor(module, program, props) {
     this.lua = new module.Lua();
 
     this.texts = {};
@@ -7,11 +7,7 @@ export default class Badge {
     this.errors = {};
 
     for (let prop of props) {
-      let el = rootEl.querySelector(prop.selector);
-      if (el === undefined) {
-        throw new Error(`could not find ${prop.name} in ${rootEl}`);
-      }
-
+      let el = prop.el;
       switch (prop.type) {
         case "text":
           this.texts[prop.name] = el;

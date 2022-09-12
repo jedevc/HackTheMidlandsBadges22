@@ -3,6 +3,8 @@ import React, { useCallback, useState, useEffect } from "react";
 import createBadgeModule from "../../../../tmp/badge.emscripten.js";
 import "../../../../tmp/badge.emscripten.wasm";
 
+import styles from "./badge.module";
+
 import badge from "./badge";
 import loop from "./loop";
 
@@ -16,11 +18,27 @@ const Badge = ({ program }) => {
     if (el === undefined || el === null) return;
 
     const setup = () => {
-      let b = new badge(badgeModule, program, el, [
-        { type: "text", name: "title", selector: ".title" },
-        { type: "text", name: "content", selector: ".content" },
-        { type: "image", name: "image", selector: ".image" },
-        { type: "error", name: "error", selector: ".error" },
+      let b = new badge(badgeModule, program, [
+        {
+          type: "text",
+          name: "title",
+          el: el.querySelector("." + styles.title),
+        },
+        {
+          type: "text",
+          name: "content",
+          el: el.querySelector("." + styles.content),
+        },
+        {
+          type: "image",
+          name: "image",
+          el: el.querySelector("." + styles.image),
+        },
+        {
+          type: "error",
+          name: "error",
+          el: el.querySelector("." + styles.error),
+        },
       ]);
       const loopCancel = loop(() => b.step());
       setCancel(() => () => {
@@ -48,15 +66,15 @@ const Badge = ({ program }) => {
     setEl(el);
   });
   return (
-    <div className="badge-container">
-      <div className="badge" ref={setupRef}>
-        <div className="image-container">
-          <canvas className="image" width="64" height="40"></canvas>
+    <div className={styles.badgeContainer}>
+      <div className={styles.badge} ref={setupRef}>
+        <div className={styles.imageContainer}>
+          <canvas className={styles.image} width="64" height="40"></canvas>
         </div>
-        <span className="title"></span>
-        <span className="content"></span>
-        <span className="citation">HackTheMidlands 7.0</span>
-        <div className="error"></div>
+        <span className={styles.title}></span>
+        <span className={styles.content}></span>
+        <span className={styles.citation}>HackTheMidlands 7.0</span>
+        <span className={styles.error}></span>
       </div>
     </div>
   );
