@@ -69,7 +69,6 @@ static int traceback(lua_State *L) {
     lua_pushvalue(L, 1);
     lua_pushinteger(L, 2);
     lua_call(L, 2, 1);
-    fprintf(stderr, "%s\n", lua_tostring(L, -1));
     return 1;
 }
 
@@ -134,7 +133,6 @@ public:
     int code = luaL_loadstring(state, program.c_str());
     if (code != 0) {
       const char *value = lua_tostring(state, -1);
-      printf("%s\n", value);
       result = LuaResult(value);
     }
     lua_settable(state, LUA_REGISTRYINDEX);
@@ -156,7 +154,6 @@ public:
     int code = lua_pcall(state, 0, LUA_MULTRET, -2);
     if (code != 0) {
       const char *value = lua_tostring(state, -1);
-      printf("%s\n", value);
       result = LuaResult(value);
     } else {
       result = get_result();

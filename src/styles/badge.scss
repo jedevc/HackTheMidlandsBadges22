@@ -95,6 +95,12 @@
     width: 95%;
     color: rgb(230, 230, 230);
   }
+  
+  .error {
+    &:empty {
+      display: none;
+    }
+  }
 
   .citation {
     &::before {

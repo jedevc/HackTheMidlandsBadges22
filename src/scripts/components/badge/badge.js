@@ -36,16 +36,16 @@ export default class Badge {
     let result = this.lua.parse(program);
     if (result.err) {
       this.setError(result.err);
-      throw new Error(result.err);
     }
     result.delete();
   }
 
   step() {
+    if (this.lua === null) return;
+
     let result = this.lua.run();
     if (result.err) {
       this.setError(result.err);
-      throw new Error(result.err);
     }
 
     for (const [name, el] of Object.entries(this.texts)) {
@@ -78,8 +78,9 @@ export default class Badge {
   }
 
   setError(message) {
+    this.lua.delete();
+    this.lua = null;
     for (let [name, el] of Object.entries(this.errors)) {
-      console.log(el, message);
       el.innerText = message;
     }
   }

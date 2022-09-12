@@ -56,7 +56,7 @@ const Badge = ({ program }) => {
         <span className="title"></span>
         <span className="content"></span>
         <span className="citation">HackTheMidlands 7.0</span>
-        <div className="error">Ahhh</div>
+        <div className="error"></div>
       </div>
     </div>
   );
