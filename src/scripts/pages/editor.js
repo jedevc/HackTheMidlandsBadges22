@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import styles from "./editor.module";
 
 import Badge from "../components/badge";
 import Monaco from "@monaco-editor/react";
@@ -25,15 +26,15 @@ const Editor = () => {
   };
 
   return (
-    <div className="editor">
-      <div className="toolbar-pane">
+    <div className={styles.editor}>
+      <div className={styles.paneToolbar}>
         <Button text="Save" icon={<FaSave />} color="#3b66fa" />
         <Button text="View" icon={<FaGlasses />} color="#ff7365" link="/" />
       </div>
-      <div className="editor-pane">
+      <div className={styles.paneEditor}>
         <Monaco value={program} language="lua" onChange={handleChange} />
       </div>
-      <div className="badge-pane">
+      <div className={styles.paneBadge}>
         <Badge program={program} />
       </div>
     </div>
