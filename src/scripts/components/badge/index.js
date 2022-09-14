@@ -4,6 +4,8 @@ import createBadgeModule from "../../../../tmp/badge.emscripten.js";
 import "../../../../tmp/badge.emscripten.wasm";
 
 import styles from "./badge.module";
+import badgeOutline from "../../../assets/badge-outline.svg";
+import badgeBackground from "../../../assets/badge-background.svg";
 
 import badge from "./badge";
 import loop from "./loop";
@@ -67,14 +69,17 @@ const Badge = ({ program }) => {
   });
   return (
     <div className={styles.badgeContainer}>
-      <div className={styles.badge} ref={setupRef}>
-        <div className={styles.imageContainer}>
-          <canvas className={styles.image} width="64" height="40"></canvas>
+      <div className={styles.badge}>
+        <img className={styles.badgeBackground} src={badgeBackground} />
+        <img className={styles.badgeOutline} src={badgeOutline} />
+        <div className={styles.badgeContents} ref={setupRef}>
+          <div className={styles.imageContainer}>
+            <canvas className={styles.image} width="64" height="64"></canvas>
+          </div>
+          <span className={styles.title}></span>
+          <span className={styles.content}></span>
+          <span className={styles.error}></span>
         </div>
-        <span className={styles.title}></span>
-        <span className={styles.content}></span>
-        <span className={styles.citation}>HackTheMidlands 7.0</span>
-        <span className={styles.error}></span>
       </div>
     </div>
   );

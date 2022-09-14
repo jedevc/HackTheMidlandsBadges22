@@ -36,8 +36,8 @@ module.exports = {
         use: ["style-loader", "css-loader"],
       },
       {
-        test: /\.ttf$/,
-        use: ["file-loader"],
+        test: /\.(ttf|svg)$/,
+        type: "asset/resource",
       },
       {
         test: /\.module\.s(a|c)ss$/,
@@ -74,11 +74,10 @@ module.exports = {
       },
       {
         test: /\.wasm$/,
-        type: "asset/inline",
-        loader: "file-loader",
-        options: {
-          name: "[name].[ext]",
-        },
+        type: "asset/resource",
+        generator: {
+          filename: '[name][ext]'
+        }
       },
     ],
   },
