@@ -1,3 +1,7 @@
+# protect vendor from accidents
+/vendor/
+
+# build artifacts
 /tmp/
 /build/
 
