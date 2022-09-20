@@ -69,16 +69,18 @@ const Badge = ({ program }) => {
   });
   return (
     <div className={styles.badgeContainer}>
-      <div className={styles.badge}>
-        <img className={styles.badgeBackground} src={badgeBackground} />
-        <img className={styles.badgeOutline} src={badgeOutline} />
-        <div className={styles.badgeContents} ref={setupRef}>
-          <div className={styles.imageContainer}>
-            <canvas className={styles.image} width="64" height="64"></canvas>
+      <div className={styles.badgeBounds}>
+        <div className={styles.badge}>
+          <img className={styles.badgeBackground} src={badgeBackground} />
+          <img className={styles.badgeOutline} src={badgeOutline} />
+          <div className={styles.badgeContents} ref={setupRef}>
+            <div className={styles.imageContainer}>
+              <canvas className={styles.image} width="64" height="48"></canvas>
+            </div>
+            <span className={styles.title}></span>
+            <span className={styles.content}></span>
+            <span className={styles.error}></span>
           </div>
-          <span className={styles.title}></span>
-          <span className={styles.content}></span>
-          <span className={styles.error}></span>
         </div>
       </div>
     </div>
