@@ -34,7 +34,12 @@ const Editor = () => {
       </div>
       <Splitter direction={SplitDirection.Horizontal}>
         <div className={styles.paneEditor}>
-          <Monaco value={program} language="lua" onChange={handleChange} />
+          <Monaco
+            value={program}
+            language="lua"
+            theme="vs-dark"
+            onChange={handleChange}
+          />
         </div>
         <div className={styles.paneBadge}>
           <Badge program={program} />
