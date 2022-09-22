@@ -3,6 +3,7 @@ import styles from "./editor.module";
 
 import Badge from "../components/badge";
 import Monaco from "@monaco-editor/react";
+import Splitter, { SplitDirection } from "@devbookhq/splitter";
 
 import Button from "../components/button";
 import { FaGlasses, FaSave } from "react-icons/fa";
@@ -31,12 +32,14 @@ const Editor = () => {
         <Button text="Save" icon={<FaSave />} color="#3b66fa" />
         <Button text="View" icon={<FaGlasses />} color="#ff7365" link="/" />
       </div>
-      <div className={styles.paneEditor}>
-        <Monaco value={program} language="lua" onChange={handleChange} />
-      </div>
-      <div className={styles.paneBadge}>
-        <Badge program={program} />
-      </div>
+      <Splitter direction={SplitDirection.Horizontal}>
+        <div className={styles.paneEditor}>
+          <Monaco value={program} language="lua" onChange={handleChange} />
+        </div>
+        <div className={styles.paneBadge}>
+          <Badge program={program} />
+        </div>
+      </Splitter>
     </div>
   );
 };
