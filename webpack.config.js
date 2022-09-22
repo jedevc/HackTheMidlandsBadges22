@@ -3,7 +3,7 @@ const spawn = require("child_process").spawnSync;
 
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const WatchExternalFilesPlugin = require('webpack-watch-files-plugin').default;
+const WatchExternalFilesPlugin = require("webpack-watch-files-plugin").default;
 
 const isDevelopment = process.env.NODE_ENV === "development";
 
@@ -36,8 +36,22 @@ module.exports = {
         use: ["style-loader", "css-loader"],
       },
       {
-        test: /\.(ttf|svg)$/,
+        test: /\.(ttf)$/,
         type: "asset/resource",
+      },
+      {
+        test: /\.(svg)$/,
+        issuer: /\.[jt]sx?$/,
+        use: [
+          {
+            loader: "@svgr/webpack",
+            options: {
+              svgoConfig: {
+                cleanupIDs: false,
+              },
+            },
+          },
+        ],
       },
       {
         test: /\.module\.s(a|c)ss$/,
@@ -47,7 +61,7 @@ module.exports = {
             loader: "css-loader",
             options: {
               modules: {
-                localIdentName:'[name]__[local]--[hash:base64:8]',
+                localIdentName: "[name]__[local]--[hash:base64:8]",
               },
               sourceMap: isDevelopment,
             },
@@ -78,8 +92,8 @@ module.exports = {
         test: /\.wasm$/,
         type: "asset/resource",
         generator: {
-          filename: '[name][ext]'
-        }
+          filename: "[name][ext]",
+        },
       },
     ],
   },
@@ -98,9 +112,7 @@ module.exports = {
   },
   plugins: [
     new WatchExternalFilesPlugin({
-      files: [
-        './src/system/**/*',
-      ]
+      files: ["./src/system/**/*"],
     }),
     new HtmlWebpackPlugin({
       template: "./src/pages/index.html",
@@ -112,7 +124,9 @@ module.exports = {
     {
       apply: (compiler) => {
         compiler.hooks.compilation.tap("AfterEmitPlugin", () => {
-          const child = spawn("make", ["internal-build-emscripten"], {stdio: "inherit"});
+          const child = spawn("make", ["internal-build-emscripten"], {
+            stdio: "inherit",
+          });
           if (child.error) {
             return child.error;
           }

@@ -4,8 +4,9 @@ import createBadgeModule from "../../../../tmp/badge.emscripten.js";
 import "../../../../tmp/badge.emscripten.wasm";
 
 import styles from "./badge.module";
-import badgeOutline from "../../../assets/badge-outline.svg";
-import badgeBackground from "../../../assets/badge-background.svg";
+import BadgeOutline from "../../../assets/badge-outline.svg";
+import BadgeBackground from "../../../assets/badge-background.svg";
+import BadgeClip from "../../../assets/badge-clip.svg";
 
 import badge from "./badge";
 import loop from "./loop";
@@ -71,8 +72,9 @@ const Badge = ({ program }) => {
     <div className={styles.badgeContainer}>
       <div className={styles.badgeBounds}>
         <div className={styles.badge}>
-          <img className={styles.badgeBackground} src={badgeBackground} />
-          <img className={styles.badgeOutline} src={badgeOutline} />
+          <BadgeBackground className={styles.badgeBackground} />
+          <BadgeOutline className={styles.badgeOutline} />
+          <BadgeClip />
           <div className={styles.badgeContents} ref={setupRef}>
             <div className={styles.imageContainer}>
               <canvas className={styles.image} width="64" height="48"></canvas>
