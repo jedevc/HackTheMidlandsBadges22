@@ -13,7 +13,7 @@ import loop from "./loop";
 
 let badgeModule = null;
 
-const Badge = ({ program }) => {
+const Badge = ({ program, onError = null }) => {
   const [cancel, setCancel] = useState(null);
   const [el, setEl] = useState(null);
 
@@ -21,28 +21,28 @@ const Badge = ({ program }) => {
     if (el === undefined || el === null) return;
 
     const setup = () => {
-      let b = new badge(badgeModule, program, [
-        {
-          type: "text",
-          name: "title",
-          el: el.querySelector("." + styles.title),
-        },
-        {
-          type: "text",
-          name: "content",
-          el: el.querySelector("." + styles.content),
-        },
-        {
-          type: "image",
-          name: "image",
-          el: el.querySelector("." + styles.image),
-        },
-        {
-          type: "error",
-          name: "error",
-          el: el.querySelector("." + styles.error),
-        },
-      ]);
+      let b = new badge(
+        badgeModule,
+        program,
+        [
+          {
+            type: "text",
+            name: "title",
+            el: el.querySelector("." + styles.title),
+          },
+          {
+            type: "text",
+            name: "content",
+            el: el.querySelector("." + styles.content),
+          },
+          {
+            type: "image",
+            name: "image",
+            el: el.querySelector("." + styles.image),
+          },
+        ],
+        (onError = onError)
+      );
       const loopCancel = loop(() => b.step());
       setCancel(() => () => {
         loopCancel();
@@ -81,7 +81,6 @@ const Badge = ({ program }) => {
             </div>
             <span className={styles.title}></span>
             <span className={styles.content}></span>
-            <span className={styles.error}></span>
           </div>
         </div>
       </div>

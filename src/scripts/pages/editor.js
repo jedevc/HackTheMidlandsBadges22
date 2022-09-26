@@ -22,8 +22,41 @@ end
 
 const Editor = () => {
   let [program, setProgram] = useState(defaultProgram);
+  let [errorMessage, setErrorMessage] = useState(errorMessage);
+
   const handleChange = (value) => {
     setProgram(value);
+    setErrorMessage("");
+  };
+  const handleError = (message) => {
+    if (message.startsWith(`[string "`)) {
+      const [location, lineRaw, err] = message.split(":");
+      if (err) {
+        let line = parseInt(lineRaw) - 1;
+        const lines = program.split("\n");
+        
+        let start = line - 1;
+        let end = line + 1;
+        if (start < 0) {
+          end -= start;
+          start = 0;
+        }
+        if (end >= lines.length) {
+          start -= (end - lines.length + 1);
+          end = lines.length - 1;
+        }
+        if (start < 0) {
+          start = 0;
+        }
+        
+        message = `${err.trim()} on line ${line}\n`;
+        for (let i = start; i <= end; i++) {
+          let iStr = String(i).padStart(String(lines.length).length, " ")
+          message += `${i == line ? ">" : " "} ${iStr} | ${lines[i]}\n`;
+        }
+      }
+    }
+    setErrorMessage(message);
   };
 
   return (
@@ -33,16 +66,22 @@ const Editor = () => {
         <Button text="View" icon={<FaGlasses />} color="#ff7365" link="/" />
       </div>
       <Splitter direction={SplitDirection.Horizontal}>
-        <div className={styles.paneEditor}>
-          <Monaco
-            value={program}
-            language="lua"
-            theme="vs-dark"
-            onChange={handleChange}
-          />
-        </div>
+        <Splitter direction={SplitDirection.Vertical} initialSizes={[90, 10]}>
+          <div className={styles.paneEditor}>
+            <Monaco
+              value={program}
+              language="lua"
+              theme="vs-dark"
+              onChange={handleChange}
+            />
+          </div>
+          <div className={styles.paneError}>
+            {errorMessage}
+          </div>
+        </Splitter>
+
         <div className={styles.paneBadge}>
-          <Badge program={program} />
+          <Badge program={program} onError={handleError} />
         </div>
       </Splitter>
     </div>
