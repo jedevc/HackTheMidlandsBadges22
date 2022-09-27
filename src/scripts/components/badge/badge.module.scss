@@ -1,5 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap");
-@import "../../../styles/colors";
+@import "../../../styles/background";
 
 .badgeContainer {
   display: flex;
@@ -10,12 +10,8 @@
   height: 100%;
   padding: 50px;
   box-sizing: border-box;
-
-  background-image: linear-gradient(
-      rgba($background, $background-blend),
-      rgba($background, $background-blend)
-    ),
-    url(https://www.toptal.com/designers/subtlepatterns/uploads/embossed-diamond.png);
+  
+  @extend .background;
 }
 
 .badgeBounds {

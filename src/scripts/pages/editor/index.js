@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import styles from "./editor.module";
 
-import Badge from "../components/badge";
+import Badge from "../../components/badge";
 import Monaco from "@monaco-editor/react";
 import Splitter, { SplitDirection } from "@devbookhq/splitter";
 
-import Button from "../components/button";
+import Button from "../../components/button";
 import { FaGlasses, FaSave } from "react-icons/fa";
 
 const defaultProgram = `

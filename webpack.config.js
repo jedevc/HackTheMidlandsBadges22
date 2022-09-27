@@ -1,6 +1,7 @@
 const path = require("path");
 const spawn = require("child_process").spawnSync;
 
+const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const WatchExternalFilesPlugin = require("webpack-watch-files-plugin").default;
@@ -111,6 +112,10 @@ module.exports = {
     runtimeChunk: "single",
   },
   plugins: [
+    new webpack.EnvironmentPlugin([
+      'PLATFORM_SERVER_URL',
+      'PLATFORM_APP_ID',
+    ]),
     new WatchExternalFilesPlugin({
       files: ["./src/system/**/*"],
     }),
