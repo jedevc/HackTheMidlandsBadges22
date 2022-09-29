@@ -18,6 +18,7 @@ module.exports = {
     globalObject: "self",
     filename: "[name].bundle.js",
     path: path.resolve(__dirname, "build/"),
+    publicPath: "/",
   },
   resolve: {
     extensions: [".js", ".jsx", ".scss"],
