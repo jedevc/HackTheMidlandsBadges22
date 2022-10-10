@@ -36,32 +36,19 @@ class BadgeCode(Base):
     badge: "Badge" = relationship("Badge", back_populates="codes")
 
 
-class App(Base):
-    __tablename__ = "apps"
-
-    id = Column(String, primary_key=True, index=True, default=uniqueid)
-    name = Column(String)
-
-    tokens: list["APIToken"] = relationship("APIToken", back_populates="app")
-
-
 class APIToken(Base):
     __tablename__ = "tokens"
 
     id = Column(String, primary_key=True, index=True, default=uniqueid)
-    app_id = Column(String, ForeignKey("apps.id"))
-
-    app: "App" = relationship("App", back_populates="tokens")
+    # permissions = ...
 
 
 class Store(Base):
-    __tablename__ = "app_stores"
+    __tablename__ = "stores"
 
     id = Column(String, primary_key=True, index=True, default=uniqueid)
-    app_id = Column(String, ForeignKey("apps.id"))
     badge_id = Column(String, ForeignKey("badges.id"))
 
     data: dict[str, str] = Column(mutable_json_type(dbtype=JSONB, nested=True))
 
-    app: "App" = relationship("App")
     badge: "Badge | None" = relationship("Badge")

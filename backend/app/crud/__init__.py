@@ -1,7 +1,7 @@
 from ..models.database import SessionLocal
-from .apps import *
 from .badges import *
 from .stores import *
+from .tokens import *
 from .users import *
 
 

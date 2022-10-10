@@ -4,20 +4,15 @@ from .. import models
 from ..utils import Token
 
 
-def get_store(
-    db: Session, app: models.App, badge: models.Badge | None = None
-) -> models.Store | None:
+def get_store(db: Session, badge: models.Badge | None = None) -> models.Store | None:
     q = db.query(models.Store)
-    q = q.filter(models.Store.app_id == app.id)
     if badge:
         q = q.filter(models.Store.badge_id == badge.id)
     return q.first()
 
 
-def create_store(
-    db: Session, app: models.App, badge: models.Badge | None = None
-) -> models.Store:
-    db_store = models.Store(app=app, badge=badge, data={})
+def create_store(db: Session, badge: models.Badge | None = None) -> models.Store:
+    db_store = models.Store(badge=badge, data={})
     db.add(db_store)
     db.commit()
     db.refresh(db_store)
