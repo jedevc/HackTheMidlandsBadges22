@@ -1,0 +1,67 @@
+services:
+  reverse-proxy:
+    image: traefik:v2.9
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker"
+      - "--providers.docker.exposedbydefault=false"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  frontend:
+    build:
+      context: ./frontend/
+      target: dev
+    restart: on-failure
+    environment:
+      PLATFORM_SERVER_URL: "http://backend.localhost"
+      PLATFORM_APP_ID: "unknown"
+    volumes:
+      - "frontend_emscripten_cache:/usr/lib/emscripten/cache/"
+      - "./frontend/src:/usr/src/app/src"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`frontend.localhost`)"
+
+  backend:
+    build:
+      context: ./backend/
+      target: dev
+    restart: on-failure
+    environment:
+      DB_HOST: db
+      DB_USER: "${DB_USER}"
+      DB_PASSWORD: "${DB_PASSWORD}"
+      DB_DATABASE: "${DB_DATABASE}"
+    volumes:
+      - "./backend/app:/usr/src/app/app"
+    depends_on:
+      - db
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`backend.localhost`)"
+      - "traefik.http.routers.backend.middlewares=backend-cors@docker"
+      - "traefik.http.middlewares.backend-cors.headers.accesscontrolallowmethods=*"
+      - "traefik.http.middlewares.backend-cors.headers.accesscontrolalloworiginlist=*"
+
+  db:
+    image: postgres
+    restart: on-failure
+    environment:
+      POSTGRES_USER: "${DB_USER}"
+      POSTGRES_PASSWORD: "${DB_PASSWORD}"
+      POSTGRES_DB: "${DB_DATABASE}"
+    volumes:
+      - "db_data:/var/lib/postgresql/data"
+    # healthcheck:
+    #   test: ["CMD", "pg_isready", "-d", "${DB_DATABASE}"]
+    #   timeout: 60s
+    #   interval: 5s
+    #   retries: 10
+
+volumes:
+  frontend_emscripten_cache:
+  db_data:

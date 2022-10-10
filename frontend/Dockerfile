@@ -16,5 +16,5 @@ FROM build-base as dev
 
 COPY . ./
 
-EXPOSE 8080
+EXPOSE 80
 CMD ["sh", "--login", "-c", "yarn run serve"]

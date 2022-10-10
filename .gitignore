@@ -1,9 +1,1 @@
-# protect vendor from accidents
-/vendor/
-
-# build artifacts
-/tmp/
-/build/
-
-/node_modules/
-*.log
+.env

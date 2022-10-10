@@ -100,9 +100,12 @@ module.exports = {
     ],
   },
   devServer: {
+    port: 80,
     static: "./build/",
     historyApiFallback: true,
+    allowedHosts: 'all',
     client: {
+      webSocketURL: 'auto://0.0.0.0:0/ws',
       overlay: {
         warnings: false,
         errors: true,

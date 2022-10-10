@@ -1,0 +1,40 @@
+from typing import Any
+
+from pydantic import BaseModel
+
+from ..utils import TokenGetter
+from .badges import Badge
+
+
+class UserBase(BaseModel):
+    name: str
+    email: str
+
+    class Config:
+        getter_dict = TokenGetter(id="usr")
+        orm_mode = True
+
+
+class UserBaseOpt(BaseModel):
+    name: str | None
+    email: str | None
+
+    class Config:
+        getter_dict = TokenGetter(id="usr")
+        orm_mode = True
+
+
+class UserCreate(UserBase):
+    pass
+
+
+class UserUpdate(UserBaseOpt):
+    pass
+
+
+class User(UserBase):
+    id: str
+    badges: list[Badge]
+
+    class Config:
+        orm_mode = True
