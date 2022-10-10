@@ -46,6 +46,7 @@ services:
       - "traefik.http.routers.backend.rule=Host(`backend.localhost`)"
       - "traefik.http.routers.backend.middlewares=backend-cors@docker"
       - "traefik.http.middlewares.backend-cors.headers.accesscontrolallowmethods=*"
+      - "traefik.http.middlewares.backend-cors.headers.accesscontrolallowheaders=*"
       - "traefik.http.middlewares.backend-cors.headers.accesscontrolalloworiginlist=*"
 
   db:

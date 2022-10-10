@@ -1,11 +1,13 @@
+from typing import Any
+
 from sqlalchemy.orm import Session
 
 from .. import models
 from ..utils import Token
 
 
-def create_token(db: Session) -> models.APIToken:
-    db_token = models.APIToken()
+def create_token(db: Session, permissions: dict[str, Any]) -> models.APIToken:
+    db_token = models.APIToken(permissions=permissions)
     db.add(db_token)
     db.commit()
     db.refresh(db_token)

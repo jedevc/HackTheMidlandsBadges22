@@ -1,8 +1,8 @@
 from pydantic import BaseModel
 
 from ..utils import TokenGetter
-from .apps import *
 from .badges import *
+from .tokens import *
 from .users import *
 
 

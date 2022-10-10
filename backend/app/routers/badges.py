@@ -2,34 +2,20 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from .. import crud, models, schemas
+from .helpers import PERMISSION_EXCEPTION, badge, badge_code, permissions
 
 router = APIRouter()
 
 
-async def badge(badge_id: str, db: Session = Depends(crud.get_db)) -> models.Badge:
-    badge = crud.get_badge(db, badge_id)
-    if not badge:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Badge not found"
-        )
-    return badge
-
-
-async def badge_code(
-    badge_id: str, code_id: str, db: Session = Depends(crud.get_db)
-) -> models.BadgeCode:
-    badge_code = crud.get_badge_code(db, badge_id, code_id)
-    if not badge_code:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Badge code not found"
-        )
-    return badge_code
-
-
 @router.get("/badges", tags=["badges"], response_model=list[schemas.Badge])
 async def read_badges(
-    offset: int = 0, limit: int = 10, db: Session = Depends(crud.get_db)
+    offset: int = 0,
+    limit: int = 10,
+    db: Session = Depends(crud.get_db),
+    permissions: schemas.Permissions = Depends(permissions),
 ) -> list[models.Badge]:
+    if not permissions.badges.can_enumerate():
+        raise PERMISSION_EXCEPTION
     return crud.get_badges(db, offset=offset, limit=limit)
 
 
@@ -40,8 +26,12 @@ async def read_badge(badge: models.Badge = Depends(badge)) -> models.Badge:
 
 @router.post("/badges", tags=["badges"], response_model=schemas.Badge)
 async def create_badge(
-    user_id: str, db: Session = Depends(crud.get_db)
+    user_id: str,
+    db: Session = Depends(crud.get_db),
+    permissions: schemas.Permissions = Depends(permissions),
 ) -> models.Badge:
+    if not permissions.badges.can_create():
+        raise PERMISSION_EXCEPTION
     user = crud.get_user(db, user_id)
     if user is None:
         raise HTTPException(
@@ -53,8 +43,12 @@ async def create_badge(
 
 @router.delete("/badges", tags=["badges"])
 async def delete_badge(
-    badge: models.Badge = Depends(badge), db: Session = Depends(crud.get_db)
+    badge: models.Badge = Depends(badge),
+    db: Session = Depends(crud.get_db),
+    permissions: schemas.Permissions = Depends(permissions),
 ):
+    if not permissions.badges.can_write(badge.id):
+        raise PERMISSION_EXCEPTION
     return crud.delete_badge(db, badge)
 
 
@@ -82,8 +76,12 @@ async def read_badge_code(
     "/badges/{badge_id}/codes", tags=["badges"], response_model=schemas.BadgeCode
 )
 async def create_badge_code(
-    badge: models.Badge = Depends(badge), db: Session = Depends(crud.get_db)
+    badge: models.Badge = Depends(badge),
+    db: Session = Depends(crud.get_db),
+    permissions: schemas.Permissions = Depends(permissions),
 ) -> models.BadgeCode:
+    if not permissions.badges.can_write(badge.id):
+        raise PERMISSION_EXCEPTION
     return crud.create_badge_code(db, badge)
 
 
@@ -91,5 +89,8 @@ async def create_badge_code(
 async def delete_badge_code(
     badge_code: models.BadgeCode = Depends(badge_code),
     db: Session = Depends(crud.get_db),
+    permissions: schemas.Permissions = Depends(permissions),
 ):
+    if not permissions.badges.can_write(badge_code.badge.id):
+        raise PERMISSION_EXCEPTION
     return crud.delete_badge_code(db, badge_code)

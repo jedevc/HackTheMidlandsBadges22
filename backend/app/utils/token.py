@@ -31,7 +31,7 @@ class Token:
         return None
 
     def __str__(self) -> str:
-        return f"{self.prefix}{self.shortcode}{self.core}"
+        return f"{self.prefix if self.prefix else ''}{self.shortcode}{self.core}"
 
 
 def TokenGetter(**kwargs: str):

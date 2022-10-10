@@ -1,24 +1,23 @@
+from typing import Any
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from .. import crud, models, schemas
+from .helpers import PERMISSION_EXCEPTION, permissions, token
 
 router = APIRouter()
 
 
-async def token(token_id: str, db: Session = Depends(crud.get_db)) -> models.APIToken:
-    token = crud.get_token(db, token_id)
-    if not token:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Token not found"
-        )
-    return token
-
-
 @router.get("/tokens", tags=["tokens"], response_model=list[schemas.APIToken])
 async def read_tokens(
-    offset: int = 0, limit: int = 10, db: Session = Depends(crud.get_db)
+    offset: int = 0,
+    limit: int = 10,
+    db: Session = Depends(crud.get_db),
+    permissions: schemas.Permissions = Depends(permissions),
 ) -> list[models.APIToken]:
+    if not permissions.tokens.can_enumerate():
+        raise PERMISSION_EXCEPTION
     return crud.get_tokens(db, offset=offset, limit=limit)
 
 
@@ -31,14 +30,23 @@ async def read_token(
 
 @router.post("/tokens", tags=["tokens"], response_model=schemas.APIToken)
 async def create_token(
+    permissions: schemas.Permissions,
     db: Session = Depends(crud.get_db),
+    current_permissions: schemas.Permissions = Depends(permissions),
 ) -> models.APIToken:
-    return crud.create_token(db)
+    if not current_permissions.tokens.can_create():
+        raise PERMISSION_EXCEPTION
+
+    # FIXME: check permissions are proper subset
+    return crud.create_token(db, permissions.dict())
 
 
 @router.delete("/tokens/{token_id}", tags=["tokens"])
 async def delete_token(
     token: models.APIToken = Depends(token),
     db: Session = Depends(crud.get_db),
+    permissions: schemas.Permissions = Depends(permissions),
 ):
+    if not permissions.tokens.can_write(token.id):
+        raise PERMISSION_EXCEPTION
     return crud.delete_token(db, token)

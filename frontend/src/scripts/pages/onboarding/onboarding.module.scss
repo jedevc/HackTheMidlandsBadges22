@@ -11,7 +11,7 @@
 
 .prompt {
   width: 50%;
-  height: 50%;
+  min-height: 50%;
   min-width: 500px;
 
   border-radius: 10px;
@@ -86,4 +86,9 @@
   label {
     font-weight: bold;
   }
+}
+
+.error {
+  color: rgb(206, 61, 61);
+  font-style: italic;
 }
