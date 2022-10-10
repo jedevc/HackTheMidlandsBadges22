@@ -34,7 +34,7 @@ const Editor = () => {
       if (err) {
         let line = parseInt(lineRaw) - 1;
         const lines = program.split("\n");
-        
+
         let start = line - 1;
         let end = line + 1;
         if (start < 0) {
@@ -42,16 +42,16 @@ const Editor = () => {
           start = 0;
         }
         if (end >= lines.length) {
-          start -= (end - lines.length + 1);
+          start -= end - lines.length + 1;
           end = lines.length - 1;
         }
         if (start < 0) {
           start = 0;
         }
-        
+
         message = `${err.trim()} on line ${line}\n`;
         for (let i = start; i <= end; i++) {
-          let iStr = String(i).padStart(String(lines.length).length, " ")
+          let iStr = String(i).padStart(String(lines.length).length, " ");
           message += `${i == line ? ">" : " "} ${iStr} | ${lines[i]}\n`;
         }
       }
@@ -75,9 +75,7 @@ const Editor = () => {
               onChange={handleChange}
             />
           </div>
-          <div className={styles.paneError}>
-            {errorMessage}
-          </div>
+          <div className={styles.paneError}>{errorMessage}</div>
         </Splitter>
 
         <div className={styles.paneBadge}>

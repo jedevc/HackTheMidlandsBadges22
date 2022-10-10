@@ -1,5 +1,5 @@
 import React from "react";
-import useSWR from 'swr';
+import useSWR from "swr";
 import { useParams } from "react-router-dom";
 
 import Badge from "../../components/badge";
@@ -20,15 +20,19 @@ const codeKey = "code";
 
 const View = () => {
   const { id } = useParams();
-  const { data, error } = useSWR(process.env.PLATFORM_SERVER_URL + `/apps/${process.env.PLATFORM_APP_ID}/store/${id}/${codeKey}`, fetch);
+  const { data, error } = useSWR(
+    process.env.PLATFORM_SERVER_URL +
+      `/apps/${process.env.PLATFORM_APP_ID}/store/${id}/${codeKey}`,
+    fetch
+  );
   if (error) {
-    console.error(error)
+    console.error(error);
   }
   if (data) {
     if (data.ok) {
-      console.log(data.json())
+      console.log(data.json());
     } else {
-      console.log("need to provision")
+      console.log("need to provision");
     }
   }
 

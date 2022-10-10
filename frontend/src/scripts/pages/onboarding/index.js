@@ -69,7 +69,7 @@ export const EmailPrompt = () => {
   };
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     // check the api key is valid
   };
 

@@ -1,5 +1,5 @@
 export default class Badge {
-  constructor(module, program, props, onError=null) {
+  constructor(module, program, props, onError = null) {
     this.lua = new module.Lua();
 
     this.texts = {};

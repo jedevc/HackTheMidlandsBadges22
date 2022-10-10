@@ -22,7 +22,8 @@
   flex-direction: column;
 }
 
-.title, .contents {
+.title,
+.contents {
   padding: 0.8em 1.4em;
   p {
     width: 100%;
@@ -49,18 +50,18 @@
   width: 100%;
   height: 100%;
   padding: 1em;
-  
+
   display: flex;
   flex-direction: column;
 
   text-align: center;
-  
+
   input {
     font-size: inherit;
     box-sizing: border-box;
     width: 100%;
     border-radius: 2em 2em;
-    
+
     padding: 0.5em;
     margin: 0.5em 0 1em 0;
     border: 2px solid #bbb;

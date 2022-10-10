@@ -3,8 +3,9 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
 from sqlalchemy_json import mutable_json_type  # type: ignore
 
-from .database import Base
 from ..utils import uniqueid
+from .database import Base
+
 
 class User(Base):
     __tablename__ = "users"

@@ -1,24 +1,6 @@
-.PHONY: all build watch serve clean fmt internal-prebuild internal-build-emscripten internal-patch-emscripten
+.PHONY: all internal-prebuild internal-build-emscripten internal-patch-emscripten
 
-all: build
-
-
-build:
-	yarn build
-
-watch:
-	yarn run watch
-
-serve:
-	yarn run serve
-
-fmt:
-	sh -c "clang-format -i ./src/system/**/*.cpp"
-	sh -c "$$(yarn bin)/prettier -w ./src"
-
-clean:
-	make -C vendor/lua clean
-	rm -rf build/* tmp/*
+all:
 
 internal-build-emscripten: internal-prebuild internal-patch-emscripten tmp/badge.emscripten.js
 
