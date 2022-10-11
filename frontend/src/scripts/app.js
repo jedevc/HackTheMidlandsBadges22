@@ -5,9 +5,9 @@ import View from "./pages/view";
 import Editor from "./pages/editor";
 import {
   Onboarding,
-  EmailPrompt,
   UserPrompt,
   BadgePrompt,
+  ConfirmationPrompt,
 } from "./pages/onboarding";
 
 const App = () => {
@@ -19,7 +19,7 @@ const App = () => {
         <Route path="/onboarding" element={<Onboarding />}>
           <Route index element={<BadgePrompt />} />
           <Route path="create" element={<UserPrompt />} />
-          <Route path="email" element={<EmailPrompt />} />
+          <Route path="confirm" element={<ConfirmationPrompt />} />
         </Route>
       </Routes>
     </BrowserRouter>

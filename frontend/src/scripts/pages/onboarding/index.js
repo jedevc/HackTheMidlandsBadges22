@@ -42,7 +42,7 @@ export const BadgePrompt = () => {
     api({ path: `badges/${badgeCode}`, token: "master" })
       .then((badge) => {
         if (badge.claimed) {
-          navigate("email", { state: { badge } });
+          navigate("confirm", { state: { badge } });
         } else {
           navigate("create", { state: { badge } });
         }
@@ -92,7 +92,7 @@ export const UserPrompt = () => {
       body: { name, email, badge: badge.id },
     })
       .then((user) => {
-        navigate("../email", { state: { user, badge } });
+        navigate("../confirm", { state: { user, badge } });
       })
       .catch(setError);
   };
@@ -131,10 +131,11 @@ export const UserPrompt = () => {
   );
 };
 
-export const EmailPrompt = () => {
+export const ConfirmationPrompt = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const badge = location.state?.badge;
+  const user = location.state?.user;
   if (!badge) {
     useEffect(() => {
       navigate("../");
@@ -168,14 +169,24 @@ export const EmailPrompt = () => {
 
   return (
     <Prompt title="Sign Up | Email Confirmation" error={error}>
-      <p>
-        You should have received an email confirmation to your chosen email
-        address!
-      </p>
-      <p>
-        Please enter the api key from the email below to finish setting up your
-        badge.
-      </p>
+      {user ? (
+        <>
+          <p>
+            You should have received an email confirmation to your chosen email
+            address!
+          </p>
+          <p>
+            Enter the api key from the email to finish setting up your badge.
+          </p>
+        </>
+      ) : (
+        <>
+          <p>
+            This badge has already been claimed - if you were the one to claim
+            it, then enter the code you received in your email.
+          </p>
+        </>
+      )}
       <form className={styles.form} onSubmit={handleSubmit}>
         <label htmlFor="name">Your key</label>
         <input
