@@ -4,8 +4,8 @@ from .. import models
 from ..utils import Token
 
 
-def create_badge(db: Session, user: models.User) -> models.Badge:
-    db_badge = models.Badge(user=user)
+def create_badge(db: Session, user: models.User | None = None) -> models.Badge:
+    db_badge = models.Badge(user=user, claimed=user is not None)
     db.add(db_badge)
     db.commit()
     db.refresh(db_badge)

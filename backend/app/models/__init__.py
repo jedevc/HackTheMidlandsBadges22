@@ -1,6 +1,6 @@
 from typing import Any
 
-from sqlalchemy import Column, ForeignKey, String, Table
+from sqlalchemy import Boolean, Column, ForeignKey, String, Table
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
 from sqlalchemy_json import mutable_json_type  # type: ignore
@@ -25,7 +25,9 @@ class Badge(Base):
     id: str = Column(String, primary_key=True, index=True, default=uniqueid)
     user_id: str = Column(String, ForeignKey("users.id"))
 
-    user: "User" = relationship("User", back_populates="badges")
+    claimed: bool = Column(Boolean, default=False)
+
+    user: "User | None" = relationship("User", back_populates="badges")
     codes: list["BadgeCode"] = relationship("BadgeCode", back_populates="badge")
 
 

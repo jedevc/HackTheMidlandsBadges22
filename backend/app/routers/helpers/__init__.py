@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, Header, HTTPException, status
 from sqlalchemy.orm import Session
 
 from ... import crud, models, schemas
@@ -7,12 +7,12 @@ PERMISSION_EXCEPTION = HTTPException(status.HTTP_403_FORBIDDEN, "Permission deni
 
 
 async def permissions(
-    token: str, db: Session = Depends(crud.get_db)
+    x_token: str = Header(), db: Session = Depends(crud.get_db)
 ) -> schemas.Permissions:
-    if token == "master":
+    if x_token == "master":
         return schemas.Permissions.all()
 
-    tkn = crud.get_token(db, token)
+    tkn = crud.get_token(db, x_token)
     if not tkn:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Token not found"

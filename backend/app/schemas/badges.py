@@ -5,6 +5,7 @@ from ..utils import TokenGetter
 
 class Badge(BaseModel):
     id: str
+    claimed: bool
 
     class Config:
         orm_mode = True

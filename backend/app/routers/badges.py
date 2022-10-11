@@ -26,19 +26,12 @@ async def read_badge(badge: models.Badge = Depends(badge)) -> models.Badge:
 
 @router.post("/badges", tags=["badges"], response_model=schemas.Badge)
 async def create_badge(
-    user_id: str,
     db: Session = Depends(crud.get_db),
     permissions: schemas.Permissions = Depends(permissions),
 ) -> models.Badge:
     if not permissions.badges.can_create():
         raise PERMISSION_EXCEPTION
-    user = crud.get_user(db, user_id)
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-        )
-
-    return crud.create_badge(db, user)
+    return crud.create_badge(db)
 
 
 @router.delete("/badges", tags=["badges"])

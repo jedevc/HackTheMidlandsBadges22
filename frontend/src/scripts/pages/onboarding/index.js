@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Routes, Route, Outlet, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import styles from "./onboarding.module";
 
 import useLocalStorage from "../../../hooks/useLocalStorage";
@@ -18,21 +18,94 @@ const Prompt = ({ title, error, children }) => {
   );
 };
 
-export const SignUpPrompt = () => {
+const handleChange = (setter) => (e) => {
+  setter(e.target.value);
+};
+
+export const BadgePrompt = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const badge = location.state?.badge;
+  if (badge) {
+    useEffect(() => {
+      navigate("create", { state: { badge } });
+    });
+    return <></>;
+  }
+
+  const [badgeCode, setBadgeCode] = useState("");
+  const [error, setError] = useState(null);
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    const req = new Request(
+      process.env.PLATFORM_SERVER_URL + "/badges/" + badgeCode,
+      {
+        headers: new Headers({
+          "X-Token": "master",
+        }),
+      }
+    );
+    fetch(req)
+      .then((res) => ({ res, body: res.json() }))
+      .then(({ res, body }) => {
+        if (!res.ok) {
+          if (body.error) {
+            throw new Error(body.error);
+          }
+          throw new Error(res.statusText);
+        }
+        return body;
+      })
+      .then((badge) => {
+        if (badge.claimed) {
+          navigate("email", { state: { badge } });
+        } else {
+          navigate("create", { state: { badge } });
+        }
+      })
+      .catch(setError);
+  };
+
+  return (
+    <Prompt title="Sign Up" error={error}>
+      <p>Welcome to the HackTheMidlands Badge Editor! 🎉</p>
+      <p>To continue, please enter the code that appears on your badge.</p>
+      <form className={styles.form} onSubmit={handleSubmit}>
+        <label htmlFor="badge-code">Badge code</label>
+        <input
+          name="badge-code"
+          type="text"
+          required
+          value={badgeCode}
+          onChange={handleChange(setBadgeCode)}
+        ></input>
+        <input type="submit" value="Connect Badge"></input>
+      </form>
+    </Prompt>
+  );
+};
+
+export const UserPrompt = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const badge = location.state?.badge;
+  if (!badge) {
+    useEffect(() => {
+      navigate("../");
+    });
+    return <></>;
+  }
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [error, setError] = useState(null);
-  const handleChange = (setter) => (e) => {
-    setter(e.target.value);
-  };
   const handleSubmit = (e) => {
     e.preventDefault();
 
     const req = new Request(process.env.PLATFORM_SERVER_URL + "/signup", {
       method: "POST",
-      body: JSON.stringify({ name, email }),
+      body: JSON.stringify({ name, email, badge: badge.id }),
       headers: new Headers({
         "Content-Type": "application/json",
       }),
@@ -48,16 +121,15 @@ export const SignUpPrompt = () => {
         }
         return body;
       })
-      .then((body) => {
-        console.log(body);
-        navigate("email");
+      .then((user) => {
+        navigate("../email", { state: { user, badge } });
       })
       .catch(setError);
   };
 
   return (
-    <Prompt title="Sign Up" error={error}>
-      <p>Welcome to the HackTheMidlands Badge Editor! 🎉🎉</p>
+    <Prompt title="Sign Up | Create user" error={error}>
+      <p>Welcome to the HackTheMidlands Badge Editor! 🎉</p>
       <p>
         To edit the contents of your badge, you'll need to sign up with your
         name and email address. We'll use your name to automatically populate
@@ -91,13 +163,19 @@ export const SignUpPrompt = () => {
 
 export const EmailPrompt = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const badge = location.state?.badge;
+  if (!badge) {
+    useEffect(() => {
+      navigate("../");
+    });
+    return <></>;
+  }
+
   const [storedKey, setStoredKey] = useLocalStorage("token", undefined);
 
   const [key, setKey] = useState("");
   const [error, setError] = useState(null);
-  const handleChange = (setter) => (e) => {
-    setter(e.target.value);
-  };
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -117,10 +195,18 @@ export const EmailPrompt = () => {
         }
         return body;
       })
-      .then((body) => {
-        // FIXME: check if token has permissions to write that badge
+      .then((permissions) => {
+        if (!permissions.store.badges.write.includes(badge.id)) {
+          throw new Error("Provided token cannot connect to target badge");
+        }
+        if (!permissions.store.keys.read.includes("code")) {
+          throw new Error("Provided token cannot read code");
+        }
+        if (!permissions.store.keys.write.includes("code")) {
+          throw new Error("Provided token cannot write code");
+        }
         setStoredKey(key);
-        navigate("/dev/test");
+        navigate("/dev/" + badge.id);
       })
       .catch(setError);
   };

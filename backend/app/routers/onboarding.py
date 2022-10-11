@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from .. import crud, models, schemas
@@ -8,6 +8,10 @@ from .helpers import badge
 router = APIRouter()
 
 
+class Signup(schemas.UserCreate):
+    badge: str
+
+
 @router.post(
     "/signup",
     tags=["onboarding"],
@@ -15,11 +19,22 @@ router = APIRouter()
     response_model=schemas.User,
 )
 async def signup(
-    user: schemas.UserCreate,
-    badge: models.Badge = Depends(badge),
+    signup: Signup,
     db: Session = Depends(crud.get_db),
 ) -> models.User:
-    db_user = crud.create_user(db, name=user.name, email=user.email)
+    badge = crud.get_badge(db, signup.badge)
+    if not badge:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Badge not found"
+        )
+    if badge.claimed:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Badge already claimed"
+        )
+    db_user = crud.create_user(db, name=signup.name, email=signup.email)
+    badge.user = db_user
+    badge.claimed = True
+    db.commit()
 
     usr = str(Token("usr", db_user.id))
     bdg = str(Token("bdg", badge.id))
