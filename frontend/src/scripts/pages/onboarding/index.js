@@ -4,6 +4,40 @@ import styles from "./onboarding.module";
 
 import useLocalStorage from "../../../hooks/useLocalStorage";
 
+function api({ path, method = "GET", body = null, token = null }) {
+  let headers = {};
+  if (body) {
+    headers["Content-Type"] = "application/json";
+  }
+  if (token) {
+    headers["X-Token"] = token;
+  }
+  const req = new Request(process.env.PLATFORM_SERVER_URL + "/" + path, {
+    method,
+    body: body ? JSON.stringify(body) : undefined,
+    headers: new Headers(headers),
+  });
+  return fetch(req)
+    .then(
+      (res) =>
+        new Promise((resolve, reject) =>
+          res
+            .json()
+            .then((body) => resolve({ res, body }))
+            .catch(reject)
+        )
+    )
+    .then(({ res, body }) => {
+      if (!res.ok) {
+        if (body.detail) {
+          throw new Error(body.detail);
+        }
+        throw new Error(res.statusText);
+      }
+      return body;
+    });
+}
+
 const Prompt = ({ title, error, children }) => {
   return (
     <div className={styles.prompt}>
@@ -38,25 +72,7 @@ export const BadgePrompt = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const req = new Request(
-      process.env.PLATFORM_SERVER_URL + "/badges/" + badgeCode,
-      {
-        headers: new Headers({
-          "X-Token": "master",
-        }),
-      }
-    );
-    fetch(req)
-      .then((res) => ({ res, body: res.json() }))
-      .then(({ res, body }) => {
-        if (!res.ok) {
-          if (body.error) {
-            throw new Error(body.error);
-          }
-          throw new Error(res.statusText);
-        }
-        return body;
-      })
+    api({ path: `badges/${badgeCode}`, token: "master" })
       .then((badge) => {
         if (badge.claimed) {
           navigate("email", { state: { badge } });
@@ -103,24 +119,11 @@ export const UserPrompt = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const req = new Request(process.env.PLATFORM_SERVER_URL + "/signup", {
+    api({
+      path: "signup",
       method: "POST",
-      body: JSON.stringify({ name, email, badge: badge.id }),
-      headers: new Headers({
-        "Content-Type": "application/json",
-      }),
-    });
-    fetch(req)
-      .then((res) => ({ res, body: res.json() }))
-      .then(({ res, body }) => {
-        if (!res.ok) {
-          if (body.error) {
-            throw new Error(body.error);
-          }
-          throw new Error(res.statusText);
-        }
-        return body;
-      })
+      body: { name, email, badge: badge.id },
+    })
       .then((user) => {
         navigate("../email", { state: { user, badge } });
       })
@@ -179,22 +182,7 @@ export const EmailPrompt = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const req = new Request(process.env.PLATFORM_SERVER_URL + "/permissions", {
-      headers: new Headers({
-        "X-Token": key,
-      }),
-    });
-    fetch(req)
-      .then((res) => ({ res, body: res.json() }))
-      .then(({ res, body }) => {
-        if (!res.ok) {
-          if (body.error) {
-            throw new Error(body.error);
-          }
-          throw new Error(res.statusText);
-        }
-        return body;
-      })
+    api({ path: "permissions", token: key })
       .then((permissions) => {
         if (!permissions.store.badges.write.includes(badge.id)) {
           throw new Error("Provided token cannot connect to target badge");

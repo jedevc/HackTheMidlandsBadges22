@@ -19,7 +19,6 @@ services:
     restart: on-failure
     environment:
       PLATFORM_SERVER_URL: "http://backend.localhost"
-      PLATFORM_APP_ID: "unknown"
     volumes:
       - "frontend_emscripten_cache:/usr/lib/emscripten/cache/"
       - "./frontend/src:/usr/src/app/src"

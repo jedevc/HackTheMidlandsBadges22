@@ -103,9 +103,9 @@ module.exports = {
     port: 80,
     static: "./build/",
     historyApiFallback: true,
-    allowedHosts: 'all',
+    allowedHosts: "all",
     client: {
-      webSocketURL: 'auto://0.0.0.0:0/ws',
+      webSocketURL: "auto://0.0.0.0:0/ws",
       overlay: {
         warnings: false,
         errors: true,
@@ -116,10 +116,7 @@ module.exports = {
     runtimeChunk: "single",
   },
   plugins: [
-    new webpack.EnvironmentPlugin([
-      'PLATFORM_SERVER_URL',
-      'PLATFORM_APP_ID',
-    ]),
+    new webpack.EnvironmentPlugin(["PLATFORM_SERVER_URL"]),
     new WatchExternalFilesPlugin({
       files: ["./src/system/**/*"],
     }),

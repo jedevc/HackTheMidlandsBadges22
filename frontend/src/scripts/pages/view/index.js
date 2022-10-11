@@ -16,19 +16,18 @@ for i=1,image_width do
 end
 `;
 
-const codeKey = "code";
-
 const View = () => {
   const { id } = useParams();
   const { data, error } = useSWR(
-    process.env.PLATFORM_SERVER_URL +
-      `/apps/${process.env.PLATFORM_APP_ID}/store/${id}/${codeKey}`,
+    process.env.PLATFORM_SERVER_URL + `/store/${id}/code`,
     fetch
   );
+  console.log("here");
   if (error) {
     console.error(error);
   }
   if (data) {
+    data.json().then((body) => console.log(body));
     if (data.ok) {
       console.log(data.json());
     } else {
