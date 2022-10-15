@@ -79,8 +79,10 @@ const Badge = ({ program, onError = null }) => {
             <div className={styles.imageContainer}>
               <canvas className={styles.image} width="64" height="48"></canvas>
             </div>
-            <span className={styles.title}></span>
-            <span className={styles.content}></span>
+            <div className={styles.container}>
+              <span className={styles.title}></span>
+              <span className={styles.content}></span>
+            </div>
           </div>
         </div>
       </div>

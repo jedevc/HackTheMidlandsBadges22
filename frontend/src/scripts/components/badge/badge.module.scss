@@ -91,30 +91,20 @@
   }
 }
 
+.container {
+  margin-top: -22%;
+  max-height: 16%;
+  overflow: hidden;
+}
 .title,
 .content {
   display: block;
   color: black;
   margin: 1% 11%;
-  position: absolute;
-  overflow: hidden;
   user-select: none;
 }
 .title {
   font-weight: 700;
   font-size: 1.4em;
   font-variant: small-caps;
-
-  top: 51%;
-  height: 4%;
-}
-.content {
-  top: 55%;
-  height: 11%;
-}
-
-.error {
-  &:empty {
-    display: none;
-  }
 }
