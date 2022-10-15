@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 import styles from "./button.module";
 
-const Button = ({ text, icon, color, link = null }) => {
+const Button = ({ text, icon, color, link = null, onClick = null }) => {
   let content = (
     <>
       <span className={styles.buttonIcon}>{icon}</span> {text}
@@ -13,19 +13,19 @@ const Button = ({ text, icon, color, link = null }) => {
 
   if (link === null) {
     return (
-      <button className={styles.button} style={style}>
+      <button className={styles.button} style={style} onClick={onClick}>
         {content}
       </button>
     );
   } else if (link[0] == "/") {
     return (
-      <Link to={link} className={styles.button} style={style}>
+      <Link to={link} className={styles.button} style={style} onClick={onClick}>
         {content}
       </Link>
     );
   } else {
     return (
-      <a href={link} className={styles.button} style={style}>
+      <a href={link} className={styles.button} style={style} onClick={onClick}>
         {content}
       </a>
     );

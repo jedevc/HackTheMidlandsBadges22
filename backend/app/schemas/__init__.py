@@ -23,8 +23,10 @@ class Permission(BaseModel):
     superuser: bool
 
 
-class Developer(BaseModel):
-    id: str
-    email: str
+class KeyValue(BaseModel):
+    key: str
+    value: str
 
-    superuser: bool
+
+class Value(BaseModel):
+    value: str

@@ -1,12 +1,14 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import styles from "./editor.module";
 
-import Badge from "../../components/badge";
-import Monaco from "@monaco-editor/react";
 import Splitter, { SplitDirection } from "@devbookhq/splitter";
+import Monaco from "@monaco-editor/react";
+import Badge from "../../components/badge";
 
-import Button from "../../components/button";
 import { FaGlasses, FaSave } from "react-icons/fa";
+import { api } from "../../api";
+import Button from "../../components/button";
 
 const defaultProgram = `
 title = "John Doe"
@@ -21,12 +23,32 @@ end
 `;
 
 const Editor = () => {
-  let [program, setProgram] = useState(defaultProgram);
+  const { id } = useParams();
+  let [program, setProgram] = useState("-- loading...");
   let [errorMessage, setErrorMessage] = useState(errorMessage);
+
+  useEffect(() => {
+    api({
+      path: `store/${id}/code`,
+      token: "master",
+    })
+      .then(({ value: program }) => handleChange(program))
+      .catch(console.error);
+  }, [id]);
 
   const handleChange = (value) => {
     setProgram(value);
     setErrorMessage("");
+  };
+  const handleSave = () => {
+    api({
+      method: "PUT",
+      path: `store/${id}/code`,
+      token: "master",
+      body: {
+        value: program,
+      },
+    }).catch(console.error);
   };
   const handleError = (message) => {
     if (message.startsWith(`[string "`)) {
@@ -62,7 +84,12 @@ const Editor = () => {
   return (
     <div className={styles.editor}>
       <div className={styles.paneToolbar}>
-        <Button text="Save" icon={<FaSave />} color="#3b66fa" />
+        <Button
+          text="Save"
+          icon={<FaSave />}
+          color="#3b66fa"
+          onClick={handleSave}
+        />
         <Button text="View" icon={<FaGlasses />} color="#ff7365" link="/" />
       </div>
       <Splitter direction={SplitDirection.Horizontal}>

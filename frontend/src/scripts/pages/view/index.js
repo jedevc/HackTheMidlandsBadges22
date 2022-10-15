@@ -1,41 +1,35 @@
-import React from "react";
+import React, { useEffect } from "react";
 import useSWR from "swr";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import Badge from "../../components/badge";
-
-const defaultProgram = `
-title = "John Doe"
-content = "Hello I am John Doe!"
-k = (k or 0) + 1
-for i=1,image_width do
-  for j=1,image_height do
-    x = (i + j + k) % 100
-    image[i][j] = hsl(x / 100, 0.7, 0.5)
-  end
-end
-`;
+import { api } from "../../api";
 
 const View = () => {
-  const { id } = useParams();
-  const { data, error } = useSWR(
-    process.env.PLATFORM_SERVER_URL + `/store/${id}/code`,
-    fetch
-  );
-  console.log("here");
-  if (error) {
-    console.error(error);
-  }
-  if (data) {
-    data.json().then((body) => console.log(body));
-    if (data.ok) {
-      console.log(data.json());
-    } else {
-      console.log("need to provision");
-    }
-  }
+  const navigate = useNavigate();
 
-  return <Badge program={defaultProgram} />;
+  const { id } = useParams();
+  const { data: badge } = useSWR(
+    {
+      path: `badges/${id}`,
+      token: "master",
+    },
+    api
+  );
+  const { data: code } = useSWR(
+    {
+      path: `store/${id}/code`,
+      token: "master",
+    },
+    api
+  );
+  useEffect(() => {
+    if (badge && !badge.claimed) {
+      navigate("/onboarding", { state: { badge: { id: id } } });
+    }
+  }, [badge]);
+
+  return <Badge program={code ? code.value : null} />;
 };
 
 export default View;

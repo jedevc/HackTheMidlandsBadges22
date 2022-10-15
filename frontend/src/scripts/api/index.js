@@ -24,6 +24,7 @@ export function api({ path, method = "GET", body = null, token = null }) {
     .then(({ res, body }) => {
       if (!res.ok) {
         if (body.detail) {
+          console.log(body.detail);
           throw new Error(body.detail);
         }
         throw new Error(res.statusText);

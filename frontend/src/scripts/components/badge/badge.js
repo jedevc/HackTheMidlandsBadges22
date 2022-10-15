@@ -26,7 +26,7 @@ export default class Badge {
       el.classList.add("ready");
     }
 
-    let result = this.lua.parse(program);
+    let result = this.lua.parse(program ? program : "");
     if (result.err) {
       this.raiseError(result.err);
     }
