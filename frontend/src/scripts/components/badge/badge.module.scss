@@ -93,12 +93,13 @@
 
 .container {
   margin-top: -22%;
-  max-height: 16%;
+  max-height: 17%;
   overflow: hidden;
 }
 .title,
 .content {
   display: block;
+  word-break: break-all;
   color: black;
   margin: 1% 11%;
   user-select: none;
