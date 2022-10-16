@@ -64,12 +64,12 @@ private:
 };
 
 static int traceback(lua_State *L) {
-    lua_getglobal(L, "debug");
-    lua_getfield(L, -1, "traceback");
-    lua_pushvalue(L, 1);
-    lua_pushinteger(L, 2);
-    lua_call(L, 2, 1);
-    return 1;
+  lua_getglobal(L, "debug");
+  lua_getfield(L, -1, "traceback");
+  lua_pushvalue(L, 1);
+  lua_pushinteger(L, 2);
+  lua_call(L, 2, 1);
+  return 1;
 }
 
 class Lua {
@@ -80,7 +80,6 @@ public:
     lua_pushlightuserdata(state, (void *)state);
     lua_pushlightuserdata(state, (void *)this);
     lua_settable(state, LUA_REGISTRYINDEX);
-
 
     lua_pushcfunction(state, rgb);
     lua_setglobal(state, "rgb");
@@ -149,7 +148,7 @@ public:
     lua_gettable(state, LUA_REGISTRYINDEX);
 
     cost = 0;
-    
+
     LuaResult result;
     int code = lua_pcall(state, 0, LUA_MULTRET, -2);
     if (code != 0) {
