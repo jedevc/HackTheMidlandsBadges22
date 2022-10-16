@@ -8,6 +8,6 @@ router = APIRouter()
 
 @router.get("/permissions", tags=["status"])
 async def status_permissions(
-    actual_permissions: schemas.Permissions = Depends(permissions),
+    actual_permissions: schemas.Permissions = Depends(permissions()),
 ) -> schemas.Permissions:
     return actual_permissions

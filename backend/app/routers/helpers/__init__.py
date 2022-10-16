@@ -1,81 +1,113 @@
+from typing import Callable
+
 from fastapi import Depends, Header, HTTPException, status
 from sqlalchemy.orm import Session
 
 from ... import crud, models, schemas
+from ...utils import (
+    SHORTCODE_BADGE,
+    SHORTCODE_BADGE_CODE,
+    SHORTCODE_TOKEN,
+    SHORTCODE_USER,
+    Token,
+)
 
 PERMISSION_EXCEPTION = HTTPException(status.HTTP_403_FORBIDDEN, "Permission denied")
 
 
-async def permissions(
-    x_token: str = Header(), db: Session = Depends(crud.get_db)
-) -> schemas.Permissions:
-    if x_token == "master":
-        return schemas.Permissions.all()
+def permissions(f: Callable[[schemas.Permissions], bool] | None = None):
+    async def checker(
+        x_token: str = Header(),
+        db: Session = Depends(crud.get_db),
+    ) -> schemas.Permissions:
+        if x_token == "master":
+            return schemas.Permissions.all()
 
-    tkn = crud.get_token(db, x_token)
-    if not tkn:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Token not found"
-        )
-    return schemas.Permissions(**tkn.permissions)
+        tkn = crud.get_token(db, x_token)
+        if not tkn:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Token not found"
+            )
+        permissions = schemas.Permissions(**tkn.permissions)
+        if f and not f(permissions):
+            raise PERMISSION_EXCEPTION
+        return permissions
 
-
-async def user(
-    user_id: str,
-    db: Session = Depends(crud.get_db),
-    permissions: schemas.Permissions = Depends(permissions),
-) -> models.User:
-    if not permissions.users.can_read(user_id):
-        raise PERMISSION_EXCEPTION
-    user = crud.get_user(db, user_id)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-        )
-    return user
+    return checker
 
 
-async def badge(
-    badge_id: str,
-    db: Session = Depends(crud.get_db),
-    permissions: schemas.Permissions = Depends(permissions),
-) -> models.Badge:
-    if not permissions.badges.can_read(badge_id):
-        raise PERMISSION_EXCEPTION
-    badge = crud.get_badge(db, badge_id)
-    if not badge:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Badge not found"
-        )
-    return badge
+def user(f: Callable[[schemas.Permissions, Token], bool] | None = None):
+    def checker(
+        user_id: str,
+        db: Session = Depends(crud.get_db),
+        permissions: schemas.Permissions = Depends(permissions()),
+    ) -> models.User:
+        user = crud.get_user(db, user_id)
+        if f and user and not f(permissions, Token(SHORTCODE_USER, user.id)):
+            raise PERMISSION_EXCEPTION
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+            )
+        return user
+
+    return checker
 
 
-async def badge_code(
-    badge_id: str,
-    code_id: str,
-    db: Session = Depends(crud.get_db),
-    permissions: schemas.Permissions = Depends(permissions),
-) -> models.BadgeCode:
-    if not permissions.badges.can_read(badge_id):
-        raise PERMISSION_EXCEPTION
-    badge_code = crud.get_badge_code(db, badge_id, code_id)
-    if not badge_code:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Badge code not found"
-        )
-    return badge_code
+def badge(f: Callable[[schemas.Permissions, Token], bool] | None = None):
+    def checker(
+        badge_id: str,
+        db: Session = Depends(crud.get_db),
+        permissions: schemas.Permissions = Depends(permissions()),
+    ) -> models.Badge:
+        badge = crud.get_badge(db, badge_id)
+        if f and badge and not f(permissions, Token(SHORTCODE_BADGE, badge.id)):
+            raise PERMISSION_EXCEPTION
+        if not badge:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Badge not found"
+            )
+        return badge
+
+    return checker
 
 
-async def token(
-    token_id: str,
-    db: Session = Depends(crud.get_db),
-    permissions: schemas.Permissions = Depends(permissions),
-) -> models.APIToken:
-    if not permissions.tokens.can_read(token_id):
-        raise PERMISSION_EXCEPTION
-    token = crud.get_token(db, token_id)
-    if not token:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Token not found"
-        )
-    return token
+def badge_code(f: Callable[[schemas.Permissions, Token], bool] | None = None):
+    def checker(
+        badge_id: str,
+        code_id: str,
+        db: Session = Depends(crud.get_db),
+        permissions: schemas.Permissions = Depends(permissions()),
+    ) -> models.BadgeCode:
+        badge_code = crud.get_badge_code(db, badge_id, code_id)
+        if (
+            f
+            and badge_code
+            and not f(permissions, Token(SHORTCODE_BADGE, badge_code.badge.id))
+        ):
+            raise PERMISSION_EXCEPTION
+        if not badge_code:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Badge code not found"
+            )
+        return badge_code
+
+    return checker
+
+
+def token(f: Callable[[schemas.Permissions, Token], bool] | None = None):
+    def checker(
+        token_id: str,
+        db: Session = Depends(crud.get_db),
+        permissions: schemas.Permissions = Depends(permissions()),
+    ) -> models.APIToken:
+        token = crud.get_token(db, token_id)
+        if f and token and not f(permissions, Token(SHORTCODE_TOKEN, token.id)):
+            raise PERMISSION_EXCEPTION
+        if not token:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Token not found"
+            )
+        return token
+
+    return checker

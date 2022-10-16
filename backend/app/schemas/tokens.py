@@ -1,19 +1,20 @@
+import enum
 from fnmatch import fnmatch
 
 from pydantic import BaseModel
 
-from ..utils import TokenGetter
+from ..utils import SHORTCODE_TOKEN, Token, TokenGetter
 
 
-class Atom(BaseModel):
+class PermissionsAtom(BaseModel):
     read: list[str] = []
     write: list[str] = []
     create: bool = False
     enumerate: bool = False
 
     @staticmethod
-    def all() -> "Atom":
-        return Atom(
+    def all() -> "PermissionsAtom":
+        return PermissionsAtom(
             read=["*"],
             write=["*"],
             create=True,
@@ -21,13 +22,13 @@ class Atom(BaseModel):
         )
 
     @staticmethod
-    def empty() -> "Atom":
-        return Atom()
+    def empty() -> "PermissionsAtom":
+        return PermissionsAtom()
 
-    def can_read(self, item: str) -> bool:
+    def can_read(self, item: Token | str) -> bool:
         return self._can(item, self.read)
 
-    def can_write(self, item: str) -> bool:
+    def can_write(self, item: Token | str) -> bool:
         return self._can(item, self.write)
 
     def can_enumerate(self) -> bool:
@@ -36,42 +37,44 @@ class Atom(BaseModel):
     def can_create(self) -> bool:
         return self.create
 
-    def _can(self, item: str, rules: list[str]) -> bool:
+    def _can(self, item: Token | str, rules: list[str]) -> bool:
         for rule in rules:
-            if fnmatch(item, rule):
+            if fnmatch(str(item), rule):
                 return True
         return False
 
 
-class StorePermissions(BaseModel):
-    badges: Atom
-    keys: Atom
+class PermissionsStore(BaseModel):
+    badges: PermissionsAtom
+    keys: PermissionsAtom
 
-    def can_read(self, badge: str, key: str) -> bool:
+    def can_read(self, badge: Token | str, key: str) -> bool:
         return self.badges.can_read(badge) and self.keys.can_read(key)
 
-    def can_write(self, badge: str, key: str) -> bool:
+    def can_write(self, badge: Token | str, key: str) -> bool:
         return self.badges.can_write(badge) and self.keys.can_write(key)
 
-    def can_enumerate(self, badge: str) -> bool:
+    def can_enumerate(self, badge: Token | str) -> bool:
         return self.badges.can_read(badge) and self.keys.can_enumerate()
 
 
 class Permissions(BaseModel):
-    badges: Atom = Atom.empty()
-    users: Atom = Atom.empty()
-    tokens: Atom = Atom.empty()
-    store: StorePermissions = StorePermissions(badges=Atom.empty(), keys=Atom.empty())
+    badges: PermissionsAtom = PermissionsAtom.empty()
+    users: PermissionsAtom = PermissionsAtom.empty()
+    tokens: PermissionsAtom = PermissionsAtom.empty()
+    store: PermissionsStore = PermissionsStore(
+        badges=PermissionsAtom.empty(), keys=PermissionsAtom.empty()
+    )
 
     @staticmethod
     def all() -> "Permissions":
         return Permissions(
-            badges=Atom.all(),
-            users=Atom.all(),
-            tokens=Atom.all(),
-            store=StorePermissions(
-                badges=Atom.all(),
-                keys=Atom.all(),
+            badges=PermissionsAtom.all(),
+            users=PermissionsAtom.all(),
+            tokens=PermissionsAtom.all(),
+            store=PermissionsStore(
+                badges=PermissionsAtom.all(),
+                keys=PermissionsAtom.all(),
             ),
         )
 
@@ -85,5 +88,5 @@ class APIToken(BaseModel):
     permissions: Permissions
 
     class Config:
-        getter_dict = TokenGetter(id="tkn")
+        getter_dict = TokenGetter(id=SHORTCODE_TOKEN)
         orm_mode = True

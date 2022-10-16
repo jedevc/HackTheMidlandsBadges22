@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from .. import crud, models, schemas
-from ..utils import Token
+from ..utils import SHORTCODE_BADGE, SHORTCODE_TOKEN, SHORTCODE_USER, Token
 from .helpers import badge
 
 router = APIRouter()
@@ -36,18 +36,18 @@ async def signup(
     badge.claimed = True
     db.commit()
 
-    usr = str(Token("usr", db_user.id))
-    bdg = str(Token("bdg", badge.id))
+    usr = str(Token(SHORTCODE_USER, db_user.id))
+    bdg = str(Token(SHORTCODE_BADGE, badge.id))
     permissions = schemas.Permissions(
-        users=schemas.Atom(read=[usr]),
-        badges=schemas.Atom(read=[bdg]),
-        store=schemas.StorePermissions(
-            badges=schemas.Atom(read=[bdg], write=[bdg]),
-            keys=schemas.Atom(read=["code", "token"], write=["code"]),
+        users=schemas.PermissionsAtom(read=[usr]),
+        badges=schemas.PermissionsAtom(read=[bdg]),
+        store=schemas.PermissionsStore(
+            badges=schemas.PermissionsAtom(read=[bdg], write=[bdg]),
+            keys=schemas.PermissionsAtom(read=["code", "token"], write=["code"]),
         ),
     )
     db_token = crud.create_token(db, permissions.dict())
-    tkn = str(Token("tkn", db_token.id))
+    tkn = str(Token(SHORTCODE_TOKEN, db_token.id))
 
     # helper for admin view, allows easily finding token for given user
     store = crud.get_store(db, badge)
@@ -57,6 +57,6 @@ async def signup(
     db.add(store)
     db.commit()  # FIXME: only call commit once :)
 
-    print(f"emailing api token <{Token('tkn', db_token.id)}> to {db_user.email}")
+    print(f"emailing api token <{tkn}> to {db_user.email}")
 
     return db_user

@@ -11,10 +11,10 @@ router = APIRouter()
 @router.get("/store/_", tags=["storage"])
 async def read_top_level(
     db: Session = Depends(crud.get_db),
-    permissions: schemas.Permissions = Depends(permissions),
+    permissions: schemas.Permissions = Depends(
+        permissions(lambda p: p.store.can_enumerate("_"))
+    ),
 ) -> list[schemas.KeyValue]:
-    if not permissions.store.can_enumerate("_"):
-        raise PERMISSION_EXCEPTION
     if store := crud.get_store(db):
         return [
             schemas.KeyValue(key=key, value=value) for key, value in store.data.items()
@@ -26,7 +26,7 @@ async def read_top_level(
 async def read_top_level_key(
     key: str,
     db: Session = Depends(crud.get_db),
-    permissions: schemas.Permissions = Depends(permissions),
+    permissions: schemas.Permissions = Depends(permissions()),
 ) -> schemas.KeyValue | None:
     if not permissions.store.can_read("_", key):
         raise PERMISSION_EXCEPTION
@@ -40,7 +40,7 @@ async def write_top_level_key(
     key: str,
     value: schemas.Value,
     db: Session = Depends(crud.get_db),
-    permissions: schemas.Permissions = Depends(permissions),
+    permissions: schemas.Permissions = Depends(permissions()),
 ) -> schemas.KeyValue:
     if not permissions.store.can_write("_", key):
         raise PERMISSION_EXCEPTION
@@ -57,7 +57,7 @@ async def write_top_level_key(
 async def delete_top_level_key(
     key: str,
     db: Session = Depends(crud.get_db),
-    permissions: schemas.Permissions = Depends(permissions),
+    permissions: schemas.Permissions = Depends(permissions()),
 ):
     if not permissions.store.can_write("_", key):
         raise PERMISSION_EXCEPTION
@@ -70,9 +70,9 @@ async def delete_top_level_key(
 
 @router.get("/store/{badge_id}", tags=["storage"])
 async def read_badge_level(
-    badge: models.Badge = Depends(badge),
     db: Session = Depends(crud.get_db),
-    permissions: schemas.Permissions = Depends(permissions),
+    badge: models.Badge = Depends(badge()),
+    permissions: schemas.Permissions = Depends(permissions()),
 ) -> list[schemas.KeyValue]:
     if not permissions.store.can_enumerate(badge.id):
         raise PERMISSION_EXCEPTION
@@ -86,9 +86,9 @@ async def read_badge_level(
 @router.get("/store/{badge_id}/{key}", tags=["storage"])
 async def read_badge_level_key(
     key: str,
-    badge: models.Badge = Depends(badge),
     db: Session = Depends(crud.get_db),
-    permissions: schemas.Permissions = Depends(permissions),
+    badge: models.Badge = Depends(badge()),
+    permissions: schemas.Permissions = Depends(permissions()),
 ) -> schemas.KeyValue | None:
     if not permissions.store.can_read(badge.id, key):
         raise PERMISSION_EXCEPTION
@@ -101,9 +101,9 @@ async def read_badge_level_key(
 async def write_badge_level_key(
     key: str,
     value: schemas.Value,
-    badge: models.Badge = Depends(badge),
     db: Session = Depends(crud.get_db),
-    permissions: schemas.Permissions = Depends(permissions),
+    badge: models.Badge = Depends(badge()),
+    permissions: schemas.Permissions = Depends(permissions()),
 ) -> schemas.KeyValue:
     if not permissions.store.can_write(badge.id, key):
         raise PERMISSION_EXCEPTION
@@ -119,9 +119,9 @@ async def write_badge_level_key(
 @router.delete("/store/{badge_id}/{key}", tags=["storage"])
 async def delete_badge_level(
     key: str,
-    badge: models.Badge = Depends(badge),
     db: Session = Depends(crud.get_db),
-    permissions: schemas.Permissions = Depends(permissions),
+    badge: models.Badge = Depends(badge()),
+    permissions: schemas.Permissions = Depends(permissions()),
 ):
     if not permissions.store.can_write(badge.id, key):
         raise PERMISSION_EXCEPTION

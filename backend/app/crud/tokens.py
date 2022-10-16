@@ -3,7 +3,7 @@ from typing import Any
 from sqlalchemy.orm import Session
 
 from .. import models
-from ..utils import Token
+from ..utils import SHORTCODE_TOKEN, Token
 
 
 def create_token(db: Session, permissions: dict[str, Any]) -> models.APIToken:
@@ -23,7 +23,7 @@ def get_token(db: Session, token_id: str) -> models.APIToken | None:
     if token is None:
         return None
 
-    if token.shortcode == "tkn":
+    if token.shortcode == SHORTCODE_TOKEN:
         return (
             db.query(models.APIToken).filter(models.APIToken.id == token.core).first()
         )

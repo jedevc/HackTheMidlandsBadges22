@@ -2,7 +2,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from ..utils import TokenGetter
+from ..utils import SHORTCODE_USER, TokenGetter
 from .badges import Badge
 
 
@@ -11,7 +11,7 @@ class UserBase(BaseModel):
     email: str
 
     class Config:
-        getter_dict = TokenGetter(id="usr")
+        getter_dict = TokenGetter(id=SHORTCODE_USER)
         orm_mode = True
 
 
@@ -20,7 +20,7 @@ class UserBaseOpt(BaseModel):
     email: str | None
 
     class Config:
-        getter_dict = TokenGetter(id="usr")
+        getter_dict = TokenGetter(id=SHORTCODE_USER)
         orm_mode = True
 
 

@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
 from .. import models
-from ..utils import Token
+from ..utils import SHORTCODE_BADGE, SHORTCODE_BADGE_CODE, SHORTCODE_USER, Token
 
 
 def create_user(db: Session, name: str, email: str) -> models.User:
@@ -39,16 +39,16 @@ def get_user(db: Session, user_id: str) -> models.User | None:
     if token is None:
         return None
 
-    if token.shortcode == "usr":
+    if token.shortcode == SHORTCODE_USER:
         return db.query(models.User).filter(models.User.id == token.core).first()
-    elif token.shortcode == "bdg":
+    elif token.shortcode == SHORTCODE_BADGE:
         return (
             db.query(models.User)
             .join(models.Badge)
             .filter(models.Badge.id == token.core)
             .first()
         )
-    elif token.shortcode == "bdc":
+    elif token.shortcode == SHORTCODE_BADGE_CODE:
         return (
             db.query(models.User)
             .join(models.Badge)

@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from ..utils import TokenGetter
+from ..utils import SHORTCODE_BADGE, SHORTCODE_BADGE_CODE, TokenGetter
 
 
 class Badge(BaseModel):
@@ -9,7 +9,7 @@ class Badge(BaseModel):
 
     class Config:
         orm_mode = True
-        getter_dict = TokenGetter(id="bdg")
+        getter_dict = TokenGetter(id=SHORTCODE_BADGE)
 
 
 class BadgeCode(BaseModel):
@@ -17,4 +17,4 @@ class BadgeCode(BaseModel):
 
     class Config:
         orm_mode = True
-        getter_dict = TokenGetter(id="bdc")
+        getter_dict = TokenGetter(id=SHORTCODE_BADGE_CODE)
