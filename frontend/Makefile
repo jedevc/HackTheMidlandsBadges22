@@ -24,6 +24,7 @@ tmp/badge.emscripten.js: $(shell find src/system/ -type f -name *.cpp) vendor/lu
 		-std=c++17 \
 		-lembind \
 		$(CFLAGS) \
+		-s ASSERTIONS=1 \
 		-s WASM=1 \
 		-s MODULARIZE=1 \
 		-s ENVIRONMENT='web' \

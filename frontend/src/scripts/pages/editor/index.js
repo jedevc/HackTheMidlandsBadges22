@@ -50,10 +50,11 @@ const Editor = () => {
       },
     }).catch(console.error);
   };
-  const handleError = (message) => {
-    if (message.startsWith(`[string "`)) {
-      const [location, lineRaw, err] = message.split(":");
-      if (err) {
+  const handleError = (err) => {
+    let message = err.toString();
+    if (err.message.startsWith(`[string "`)) {
+      const [location, lineRaw, msg] = err.message.split(":");
+      if (msg) {
         let line = parseInt(lineRaw) - 1;
         const lines = program.split("\n");
 
@@ -71,7 +72,7 @@ const Editor = () => {
           start = 0;
         }
 
-        message = `${err.trim()} on line ${line}\n`;
+        message = `${msg.trim()} on line ${line}\n`;
         for (let i = start; i <= end; i++) {
           let iStr = String(i).padStart(String(lines.length).length, " ");
           message += `${i == line ? ">" : " "} ${iStr} | ${lines[i]}\n`;

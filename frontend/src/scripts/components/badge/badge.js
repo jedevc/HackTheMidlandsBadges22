@@ -26,9 +26,18 @@ export default class Badge {
       el.classList.add("ready");
     }
 
-    let result = this.lua.parse(program ? program : "");
+    let result = null;
+    try {
+      result = this.lua.parse(program ? program : "");
+    } catch (e) {
+      this.raiseError(e);
+    }
+    if (result === null) {
+      return;
+    }
+
     if (result.err) {
-      this.raiseError(result.err);
+      this.raiseError(new Error(result.err));
     }
     result.delete();
   }
@@ -36,9 +45,18 @@ export default class Badge {
   step() {
     if (this.lua === null) return;
 
-    let result = this.lua.run();
+    let result = null;
+    try {
+      result = this.lua.run();
+    } catch (e) {
+      this.raiseError(e);
+    }
+    if (result === null) {
+      return;
+    }
+
     if (result.err) {
-      this.raiseError(result.err);
+      this.raiseError(new Error(result.err));
     }
 
     for (const [name, el] of Object.entries(this.texts)) {
@@ -70,12 +88,12 @@ export default class Badge {
     this.lua = null;
   }
 
-  raiseError(message) {
+  raiseError(err) {
     this.lua.delete();
     this.lua = null;
-    console.error(message);
+    console.error(err);
     if (this.onError) {
-      this.onError(message, this);
+      this.onError(err, this);
     }
   }
 }
