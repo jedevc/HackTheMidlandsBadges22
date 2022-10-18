@@ -41,7 +41,7 @@ const Editor = () => {
     setErrorMessage("");
   };
   const handleSave = () => {
-    api({
+    return api({
       method: "PUT",
       path: `store/${id}/code`,
       token: "master",
@@ -91,7 +91,12 @@ const Editor = () => {
           color="#3b66fa"
           onClick={handleSave}
         />
-        <Button text="View" icon={<FaGlasses />} color="#ff7365" link="/" />
+        <Button
+          text="View"
+          icon={<FaGlasses />}
+          color="#ff7365"
+          link={`/view/${id}`}
+        />
       </div>
       <Splitter direction={SplitDirection.Horizontal}>
         <Splitter direction={SplitDirection.Vertical} initialSizes={[90, 10]}>

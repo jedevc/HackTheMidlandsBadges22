@@ -18,7 +18,24 @@
   cursor: pointer;
 }
 
+.buttonText {
+  margin: 0 0.5em;
+}
+
 .buttonIcon {
   margin-right: 0.2rem;
   vertical-align: middle;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.buttonSpinner {
+  animation: spin 2s infinite linear;
 }

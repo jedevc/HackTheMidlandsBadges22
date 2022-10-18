@@ -31,7 +31,10 @@ async def read_top_level_key(
     if not permissions.store.can_read("_", key):
         raise PERMISSION_EXCEPTION
     if store := crud.get_store(db):
-        return schemas.KeyValue(key=key, value=store.data.get(key))
+        value = store.data.get(key)
+        if value is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Key not found")
+        return schemas.KeyValue(key=key, value=value)
     return None
 
 
@@ -93,7 +96,10 @@ async def read_badge_level_key(
     if not permissions.store.can_read(badge.id, key):
         raise PERMISSION_EXCEPTION
     if store := crud.get_store(db, badge):
-        return schemas.KeyValue(key=key, value=store.data.get(key))
+        value = store.data.get(key)
+        if value is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Key not found")
+        return schemas.KeyValue(key=key, value=value)
     return None
 
 
