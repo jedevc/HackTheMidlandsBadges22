@@ -39,7 +39,10 @@ export const BadgePrompt = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    api({ path: `badges/${badgeCode}`, token: "master" })
+    api({
+      path: `badges/${badgeCode}`,
+      token: process.env.PLATFORM_DEFAULT_TOKEN,
+    })
       .then((badge) => {
         if (badge.claimed) {
           navigate("confirm", { state: { badge } });

@@ -1,3 +1,4 @@
+import os
 from typing import Callable
 
 from fastapi import Depends, Header, HTTPException, status
@@ -20,7 +21,7 @@ def permissions(f: Callable[[schemas.Permissions], bool] | None = None):
         x_token: str = Header(),
         db: Session = Depends(crud.get_db),
     ) -> schemas.Permissions:
-        if x_token == "master":
+        if x_token == os.environ["MASTER_TOKEN"]:
             return schemas.Permissions.all()
 
         tkn = crud.get_token(db, x_token)

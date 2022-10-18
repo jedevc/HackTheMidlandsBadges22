@@ -12,14 +12,14 @@ const View = () => {
   const { data: badge } = useSWR(
     {
       path: `badges/${id}`,
-      token: "master",
+      token: process.env.PLATFORM_DEFAULT_TOKEN,
     },
     api
   );
   const { data: code } = useSWR(
     {
       path: `store/${id}/code`,
-      token: "master",
+      token: process.env.PLATFORM_DEFAULT_TOKEN,
     },
     api
   );

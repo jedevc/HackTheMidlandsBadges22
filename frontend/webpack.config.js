@@ -116,7 +116,10 @@ module.exports = {
     runtimeChunk: "single",
   },
   plugins: [
-    new webpack.EnvironmentPlugin(["PLATFORM_SERVER_URL"]),
+    new webpack.EnvironmentPlugin([
+      "PLATFORM_SERVER_URL",
+      "PLATFORM_DEFAULT_TOKEN",
+    ]),
     new WatchExternalFilesPlugin({
       files: ["./src/system/**/*"],
     }),

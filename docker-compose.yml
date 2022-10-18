@@ -19,6 +19,7 @@ services:
     restart: on-failure
     environment:
       PLATFORM_SERVER_URL: "http://backend.localhost"
+      PLATFORM_DEFAULT_TOKEN: "${FRONTEND_DEFAULT_TOKEN}"
     volumes:
       - "frontend_emscripten_cache:/usr/lib/emscripten/cache/"
       - "./frontend/src:/usr/src/app/src"
@@ -36,6 +37,7 @@ services:
       DB_USER: "${DB_USER}"
       DB_PASSWORD: "${DB_PASSWORD}"
       DB_DATABASE: "${DB_DATABASE}"
+      MASTER_TOKEN: "${BACKEND_MASTER_TOKEN}"
     volumes:
       - "./backend/app:/usr/src/app/app"
     depends_on:

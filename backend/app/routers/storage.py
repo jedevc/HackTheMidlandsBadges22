@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
 from .. import crud, models, schemas
+from ..utils import SHORTCODE_BADGE, Token
 from .badges import badge
 from .helpers import PERMISSION_EXCEPTION, permissions
 
@@ -77,7 +78,7 @@ async def read_badge_level(
     badge: models.Badge = Depends(badge()),
     permissions: schemas.Permissions = Depends(permissions()),
 ) -> list[schemas.KeyValue]:
-    if not permissions.store.can_enumerate(badge.id):
+    if not permissions.store.can_enumerate(Token(SHORTCODE_BADGE, badge.id)):
         raise PERMISSION_EXCEPTION
     if store := crud.get_store(db, badge):
         return [
@@ -93,7 +94,7 @@ async def read_badge_level_key(
     badge: models.Badge = Depends(badge()),
     permissions: schemas.Permissions = Depends(permissions()),
 ) -> schemas.KeyValue | None:
-    if not permissions.store.can_read(badge.id, key):
+    if not permissions.store.can_read(Token(SHORTCODE_BADGE, badge.id), key):
         raise PERMISSION_EXCEPTION
     if store := crud.get_store(db, badge):
         value = store.data.get(key)
@@ -111,7 +112,7 @@ async def write_badge_level_key(
     badge: models.Badge = Depends(badge()),
     permissions: schemas.Permissions = Depends(permissions()),
 ) -> schemas.KeyValue:
-    if not permissions.store.can_write(badge.id, key):
+    if not permissions.store.can_write(Token(SHORTCODE_BADGE, badge.id), key):
         raise PERMISSION_EXCEPTION
     store = crud.get_store(db, badge)
     if store is None:
@@ -129,7 +130,7 @@ async def delete_badge_level(
     badge: models.Badge = Depends(badge()),
     permissions: schemas.Permissions = Depends(permissions()),
 ):
-    if not permissions.store.can_write(badge.id, key):
+    if not permissions.store.can_write(Token(SHORTCODE_BADGE, badge.id), key):
         raise PERMISSION_EXCEPTION
     store = crud.get_store(db, badge)
     if store and key in store.data:

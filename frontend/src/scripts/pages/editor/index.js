@@ -9,6 +9,7 @@ import Badge from "../../components/badge";
 import { FaGlasses, FaSave } from "react-icons/fa";
 import { api } from "../../api";
 import Button from "../../components/button";
+import useLocalStorage from "../../../hooks/useLocalStorage";
 
 const defaultProgram = `
 title = "John Doe"
@@ -23,6 +24,7 @@ end
 `;
 
 const Editor = () => {
+  const [storedKey, setStoredKey] = useLocalStorage("token", undefined);
   const { id } = useParams();
   let [program, setProgram] = useState("-- loading...");
   let [errorMessage, setErrorMessage] = useState(errorMessage);
@@ -30,11 +32,11 @@ const Editor = () => {
   useEffect(() => {
     api({
       path: `store/${id}/code`,
-      token: "master",
+      token: storedKey,
     })
       .then(({ value: program }) => handleChange(program))
       .catch(console.error);
-  }, [id]);
+  }, [id, storedKey]);
 
   const handleChange = (value) => {
     setProgram(value);
@@ -44,7 +46,7 @@ const Editor = () => {
     return api({
       method: "PUT",
       path: `store/${id}/code`,
-      token: "master",
+      token: storedKey,
       body: {
         value: program,
       },
