@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import styles from "./editor.module";
 
 import Splitter, { SplitDirection } from "@devbookhq/splitter";
@@ -24,19 +24,20 @@ end
 `;
 
 const Editor = () => {
-  const [storedKey, setStoredKey] = useLocalStorage("token", undefined);
+  const navigate = useNavigate();
   const { id } = useParams();
+
+  const [storedKey, setStoredKey] = useLocalStorage("token", undefined);
+  if (!storedKey) {
+    const state = id ? { badge: { id } } : null;
+    useEffect(() => {
+      navigate("/onboarding", { state });
+    });
+    return <></>;
+  }
+
   let [program, setProgram] = useState("-- loading...");
   let [errorMessage, setErrorMessage] = useState(errorMessage);
-
-  useEffect(() => {
-    api({
-      path: `store/${id}/code`,
-      token: storedKey,
-    })
-      .then(({ value: program }) => handleChange(program))
-      .catch(console.error);
-  }, [id, storedKey]);
 
   const handleChange = (value) => {
     setProgram(value);
@@ -52,6 +53,16 @@ const Editor = () => {
       },
     }).catch(console.error);
   };
+
+  useEffect(() => {
+    api({
+      path: `store/${id}/code`,
+      token: storedKey,
+    })
+      .then(({ value: program }) => handleChange(program))
+      .catch(console.error); // TODO: on permission denied, the code is wrong! go to onboarding.
+  }, [id, storedKey]);
+
   const handleError = (err) => {
     let message = err.toString();
     if (err.message.startsWith(`[string "`)) {

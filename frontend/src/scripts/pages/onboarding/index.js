@@ -44,6 +44,8 @@ export const BadgePrompt = () => {
       token: process.env.PLATFORM_DEFAULT_TOKEN,
     })
       .then((badge) => {
+        // TODO: run this even if badge is already set in location
+        console.log(badge);
         if (badge.claimed) {
           navigate("confirm", { state: { badge } });
         } else {
