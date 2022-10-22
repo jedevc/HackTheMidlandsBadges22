@@ -5,6 +5,18 @@ import { api } from "../../api";
 
 import useLocalStorage from "../../../hooks/useLocalStorage";
 
+const defaultProgram = `
+title = "{user}"
+content = "Hello I am {user}!"
+k = (k or 0) + 1
+for i=1,image_width do
+  for j=1,image_height do
+    x = (i + j + k) % 100
+    image[i][j] = hsl(x / 100, 0.7, 0.5)
+  end
+end
+`.trim();
+
 const Prompt = ({ title, error, children }) => {
   return (
     <div className={styles.page}>
@@ -168,6 +180,17 @@ export const ConfirmationPrompt = () => {
           throw new Error("Provided token cannot write code");
         }
         setStoredKey(key);
+
+        return api({
+          method: "PUT",
+          path: `store/${badge.id}/code`,
+          token: key,
+          body: {
+            value: defaultProgram.replaceAll("{user}", user.name),
+          },
+        });
+      })
+      .then(() => {
         navigate("/dev/" + badge.id);
       })
       .catch(setError);
