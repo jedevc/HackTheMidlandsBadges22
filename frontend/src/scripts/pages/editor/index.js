@@ -60,7 +60,12 @@ const Editor = () => {
       token: storedKey,
     })
       .then(({ value: program }) => handleChange(program))
-      .catch(console.error); // TODO: on permission denied, the code is wrong! go to onboarding.
+      .catch((e) => {
+        if (e.httpCode !== 403) throw e;
+        const state = id ? { badge: { id } } : null;
+        navigate("/onboarding", { state });
+      })
+      .catch(console.error);
   }, [id, storedKey]);
 
   const handleError = (err) => {

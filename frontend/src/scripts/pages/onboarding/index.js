@@ -26,26 +26,15 @@ const handleChange = (setter) => (e) => {
 export const BadgePrompt = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const badge = location.state?.badge;
-  if (badge) {
-    useEffect(() => {
-      navigate("create", { state: { badge } });
-    });
-    return <></>;
-  }
-
   const [badgeCode, setBadgeCode] = useState("");
   const [error, setError] = useState(null);
-  const handleSubmit = (e) => {
-    e.preventDefault();
 
+  const next = (code) => {
     api({
-      path: `badges/${badgeCode}`,
+      path: `badges/${code}`,
       token: process.env.PLATFORM_DEFAULT_TOKEN,
     })
       .then((badge) => {
-        // TODO: run this even if badge is already set in location
-        console.log(badge);
         if (badge.claimed) {
           navigate("confirm", { state: { badge } });
         } else {
@@ -53,6 +42,18 @@ export const BadgePrompt = () => {
         }
       })
       .catch(setError);
+  };
+
+  if (location.state?.badge) {
+    useEffect(() => {
+      next(location.state.badge.id);
+    });
+    return <></>;
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    next(badgeCode);
   };
 
   return (

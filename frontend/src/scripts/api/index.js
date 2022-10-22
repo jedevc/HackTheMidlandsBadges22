@@ -23,11 +23,11 @@ export function api({ path, method = "GET", body = null, token = null }) {
     )
     .then(({ res, body }) => {
       if (!res.ok) {
-        if (body.detail) {
-          console.log(body.detail);
-          throw new Error(body.detail);
-        }
-        throw new Error(res.statusText);
+        const message = body.detail || res.statusText;
+        let err = new Error(message);
+        err.httpCode = res.status;
+        err.httpMessage = res.statusText;
+        throw err;
       }
       return body;
     });
