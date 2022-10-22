@@ -9,7 +9,7 @@ import {
   BadgePrompt,
   ConfirmationPrompt,
 } from "./pages/onboarding";
-import { NotFound } from "./pages/error";
+import { APIError, NotFoundError } from "./pages/error";
 import { Home } from "./pages/home";
 
 const App = () => {
@@ -24,7 +24,8 @@ const App = () => {
           <Route path="create" element={<UserPrompt />} />
           <Route path="confirm" element={<ConfirmationPrompt />} />
         </Route>
-        <Route path="*" element={<NotFound />} />
+        <Route path="/error" element={<APIError />} />
+        <Route path="*" element={<NotFoundError />} />
       </Routes>
     </BrowserRouter>
   );

@@ -16,19 +16,22 @@ const View = () => {
     },
     api
   );
-  const { data: code } = useSWR(
-    {
-      path: `store/${id}/code`,
-      token: process.env.PLATFORM_DEFAULT_TOKEN,
-    },
-    api
-  );
   useEffect(() => {
     if (badge && !badge.claimed) {
       navigate("/onboarding", { state: { badge: { id: id } } });
     }
   }, [badge]);
 
+  const { data: code, error } = useSWR(
+    {
+      path: `store/${id}/code`,
+      token: process.env.PLATFORM_DEFAULT_TOKEN,
+    },
+    api
+  );
+  if (error) {
+    navigate("/error", { state: { error } });
+  }
   return <Badge program={code ? code.value : null} />;
 };
 

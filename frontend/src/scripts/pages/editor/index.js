@@ -65,7 +65,9 @@ const Editor = () => {
         const state = id ? { badge: { id } } : null;
         navigate("/onboarding", { state });
       })
-      .catch(console.error);
+      .catch((error) => {
+        navigate("/error", { state: { error } });
+      });
   }, [id, storedKey]);
 
   const handleError = (err) => {
