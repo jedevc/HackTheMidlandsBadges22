@@ -14,11 +14,24 @@ import loop from "./loop";
 let badgeModule = null;
 
 const Badge = ({ program, onError = null }) => {
-  const [cancel, setCancel] = useState(null);
-  const [el, setEl] = useState(null);
+  const [badgeEl, setBadgeEl] = useState(null);
+  const [controlEl, setControlEl] = useState(null);
 
   useEffect(() => {
-    if (el === undefined || el === null) return;
+    if (
+      badgeEl === undefined ||
+      badgeEl === null ||
+      controlEl === undefined ||
+      controlEl === null
+    )
+      return;
+
+    let globals = {
+      control_x: 0,
+      control_y: 0,
+      control_r: 0,
+      control_theta: 0,
+    };
 
     const setup = () => {
       let b = new badge(
@@ -28,45 +41,89 @@ const Badge = ({ program, onError = null }) => {
           {
             type: "text",
             name: "title",
-            el: el.querySelector("." + styles.title),
+            el: badgeEl.querySelector("." + styles.title),
           },
           {
             type: "text",
             name: "content",
-            el: el.querySelector("." + styles.content),
+            el: badgeEl.querySelector("." + styles.content),
           },
           {
             type: "image",
             name: "image",
-            el: el.querySelector("." + styles.image),
+            el: badgeEl.querySelector("." + styles.image),
           },
         ],
         (onError = onError)
       );
-      const loopCancel = loop(() => b.step());
-      setCancel(() => () => {
+      const loopCancel = loop(() => {
+        for (const [k, v] of Object.entries(globals)) {
+          b.set(k, v);
+        }
+        b.step();
+      });
+
+      let down = null;
+      const mouseDown = (e) => {
+        down = { x: e.clientX, y: e.clientY };
+      };
+      controlEl.addEventListener("mousedown", mouseDown);
+      const mouseUp = (e) => {
+        down = null;
+        globals.control_x = 0;
+        globals.control_y = 0;
+        controlEl.style.transform = "";
+      };
+      window.addEventListener("mouseup", mouseUp);
+      const mouseMove = (e) => {
+        if (!down) return;
+        let dx = e.clientX - down.x;
+        let dy = e.clientY - down.y;
+        let dz = Math.sqrt(dx * dx + dy * dy);
+        let mz = controlEl.getBoundingClientRect().width;
+        if (dz > mz) {
+          dx /= dz / mz;
+          dy /= dz / mz;
+        }
+        controlEl.style.transform = `translate(${dx}px, ${dy}px)`;
+        globals = {
+          control_x: dx / mz,
+          control_y: dy / mz,
+          control_r: dz / mz,
+          control_theta:
+            (360 * (Math.atan2(dy, dx) / (2 * Math.PI)) + 360 + 90) % 360,
+        };
+      };
+      window.addEventListener("mousemove", mouseMove);
+
+      return () => {
+        controlEl.removeEventListener("mousedown", mouseDown);
+        window.removeEventListener("mouseup", mouseUp);
+        window.removeEventListener("mousemove", mouseUp);
         loopCancel();
         b.delete();
-      });
+      };
     };
+
+    let cancel;
     if (badgeModule === null) {
-      createBadgeModule().then((Module) => {
+      cancel = createBadgeModule().then((Module) => {
         badgeModule = Module;
-        setup();
+        return setup();
       });
     } else {
-      setup();
+      cancel = Promise.resolve(setup());
     }
-
     return () => {
-      if (cancel !== null) {
-        cancel();
-      }
+      cancel.then((cancel) => cancel());
     };
-  }, [program, el]);
+  }, [program, badgeEl, controlEl]);
 
-  const setupRef = useCallback((el) => {
-    setEl(el);
+  const contentsRef = useCallback((el) => {
+    setBadgeEl(el);
+  });
+  const controllerRef = useCallback((el) => {
+    setControlEl(el);
   });
   return (
     <div className={styles.badgeContainer}>
@@ -75,13 +132,16 @@ const Badge = ({ program, onError = null }) => {
           <BadgeBackground className={styles.badgeBackground} />
           <BadgeOutline className={styles.badgeOutline} />
           <BadgeClip />
-          <div className={styles.badgeContents} ref={setupRef}>
+          <div className={styles.badgeContents} ref={contentsRef}>
             <div className={styles.imageContainer}>
               <canvas className={styles.image} width="64" height="48"></canvas>
             </div>
             <div className={styles.container}>
               <span className={styles.title}></span>
               <span className={styles.content}></span>
+            </div>
+            <div className={styles.controllerBounds}>
+              <div className={styles.controller} ref={controllerRef}></div>
             </div>
           </div>
         </div>

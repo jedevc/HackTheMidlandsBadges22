@@ -95,6 +95,21 @@ public:
     state = NULL;
   }
 
+  void set_global_int(string name, int v) {
+    lua_pushinteger(state, v);
+    lua_setglobal(state, name.c_str());
+  }
+
+  void set_global_float(string name, double v) {
+    lua_pushnumber(state, v);
+    lua_setglobal(state, name.c_str());
+  }
+
+  void set_global_str(string name, string v) {
+    lua_pushstring(state, v.c_str());
+    lua_setglobal(state, name.c_str());
+  }
+
   void export_text(string name) {
     texts.push_back(name);
 
@@ -230,6 +245,9 @@ EMSCRIPTEN_BINDINGS(my_module) {
       .function("pop_image", &LuaResult::pop_image);
   class_<Lua>("Lua")
       .constructor<>()
+      .function("set_global_int", &Lua::set_global_int)
+      .function("set_global_float", &Lua::set_global_float)
+      .function("set_global_str", &Lua::set_global_str)
       .function("export_text", &Lua::export_text)
       .function("export_image", &Lua::export_image)
       .function("parse", &Lua::parse)

@@ -16,8 +16,9 @@ banner = [[
 k = (k or 0) + 1
 for i=1,image_width do
   for j=1,image_height do
-    x = (i + j + k) % 100
-    image[i][j] = hsl(x / 100, 0.7, 0.5)
+    r = 30
+    x = (i * (0.2 + control_x) + j * (0.2 + control_y) + k / 2) % r
+    image[i][j] = hsl(x / r, 0.6, 0.5)
   end
 end
 

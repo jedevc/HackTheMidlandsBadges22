@@ -109,3 +109,26 @@
   font-size: 1.4em;
   font-variant: small-caps;
 }
+
+.controllerBounds {
+  position: absolute;
+  top: 63%;
+  left: -6%;
+  transform: translate(50%, 50%);
+
+  background-color: lightgrey;
+  border-radius: 50%;
+  border: 2px solid black;
+  width: 30%;
+  aspect-ratio: 1;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.controller {
+  background-color: black;
+  border-radius: 50%;
+  width: 50%;
+  height: 50%;
+}

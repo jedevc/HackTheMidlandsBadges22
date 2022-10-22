@@ -82,6 +82,14 @@ export default class Badge {
     result.delete();
   }
 
+  set(k, v) {
+    if (typeof v == "number") {
+      this.lua.set_global_float(k, v);
+    } else {
+      this.lua.set_global_string(k, `${v}`);
+    }
+  }
+
   delete() {
     if (this.lua === null) return;
     this.lua.delete();
