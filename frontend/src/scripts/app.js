@@ -10,11 +10,13 @@ import {
   ConfirmationPrompt,
 } from "./pages/onboarding";
 import { NotFound } from "./pages/error";
+import { Home } from "./pages/home";
 
 const App = () => {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/" element={<Home />} />
         <Route path="/view/:id" element={<View />} />
         <Route path="/dev/:id" element={<Editor />} />
         <Route path="/onboarding" element={<Onboarding />}>
