@@ -2,20 +2,9 @@ import React, { useEffect, useState } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import styles from "./onboarding.module";
 import { api } from "../../api";
+import { defaultProgram } from "./default";
 
 import useLocalStorage from "../../../hooks/useLocalStorage";
-
-const defaultProgram = `
-title = "{user}"
-content = "Hello I am {user}!"
-k = (k or 0) + 1
-for i=1,image_width do
-  for j=1,image_height do
-    x = (i + j + k) % 100
-    image[i][j] = hsl(x / 100, 0.7, 0.5)
-  end
-end
-`.trim();
 
 const Prompt = ({ title, error, children }) => {
   return (
