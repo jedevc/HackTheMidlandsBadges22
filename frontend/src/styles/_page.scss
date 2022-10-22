@@ -1,0 +1,47 @@
+@import "./background";
+
+.pageContainer {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  @extend .background;
+}
+
+.page {
+  width: 50%;
+  min-height: 50%;
+  min-width: 500px;
+
+  border-radius: 10px;
+  font-size: 1.2em;
+  background-color: white;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.title,
+.contents {
+  padding: 0.8em 1.4em;
+  p {
+    width: 100%;
+    margin: 0.4em 0;
+  }
+}
+.title {
+  font-weight: bold;
+  border-bottom: 1px solid grey;
+}
+
+.contents {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+}

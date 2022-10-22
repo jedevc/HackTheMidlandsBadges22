@@ -7,7 +7,7 @@ import useLocalStorage from "../../../hooks/useLocalStorage";
 
 const Prompt = ({ title, error, children }) => {
   return (
-    <div className={styles.prompt}>
+    <div className={styles.page}>
       <div className={styles.title}>{title}</div>
       <div className={styles.contents}>
         {children}
@@ -210,7 +210,7 @@ export const ConfirmationPrompt = () => {
 
 export const Onboarding = () => {
   return (
-    <div className={styles.onboardingPage}>
+    <div className={styles.pageContainer}>
       <Outlet />
     </div>
   );
