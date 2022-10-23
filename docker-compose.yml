@@ -12,7 +12,6 @@ services:
       - "80:80"
       - "8080:8080"
     volumes:
-      - acme:/acme
       - /var/run/docker.sock:/var/run/docker.sock
 
   prod-reverse-proxy:
@@ -20,10 +19,13 @@ services:
     image: traefik:v2.9
     restart: on-failure
     command:
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
       - "--providers.docker"
       - "--providers.docker.exposedbydefault=false"
+
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+
       - "--certificatesResolvers.resolver.acme.email=$ACME_EMAIL"
       - "--certificatesResolvers.resolver.acme.storage=/acme/acme.json"
       - "--certificatesresolvers.resolver.acme.httpchallenge=true"
@@ -33,9 +35,8 @@ services:
       - "80:80"
       - "443:443"
     volumes:
+      - acme:/acme
       - /var/run/docker.sock:/var/run/docker.sock
-    labels:
-      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
 
   dev-frontend:
     profiles: [dev]
@@ -67,7 +68,6 @@ services:
 
       - "traefik.http.routers.frontend-http.entrypoints=web"
       - "traefik.http.routers.frontend-http.rule=Host(`badges.$DOMAIN`)"
-      - "traefik.http.routers.frontend-http.middlewares=redirect-to-https"
 
       - "traefik.http.routers.frontend.entrypoints=websecure"
       - "traefik.http.routers.frontend.rule=Host(`badges.$DOMAIN`)"
@@ -127,7 +127,6 @@ services:
 
       - "traefik.http.routers.backend-http.entrypoints=web"
       - "traefik.http.routers.backend-http.rule=Host(`api.badges.$DOMAIN`)"
-      - "traefik.http.routers.backend-http.middlewares=redirect-to-https"
 
       - "traefik.http.routers.backend.entrypoints=websecure"
       - "traefik.http.routers.backend.rule=Host(`api.badges.$DOMAIN`)"
