@@ -66,7 +66,7 @@ async def signup(
         store = crud.create_store(db, badge)
     store.data["token"] = tkn
 
-    if SMTP_SERVER:
+    if SMTP_USERNAME and SMTP_SERVER:
         mail = MIMEMultipart("alternative")
         mail["Subject"] = onboarding_subject
         mail["From"] = SMTP_USERNAME
