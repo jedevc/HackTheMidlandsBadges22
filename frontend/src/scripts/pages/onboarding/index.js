@@ -31,30 +31,30 @@ export const BadgePrompt = () => {
   const [error, setError] = useState(null);
 
   const next = (code) => {
-    api({
+    return api({
       path: `badges/${code}`,
       token: process.env.PLATFORM_DEFAULT_TOKEN,
-    })
-      .then((badge) => {
-        if (badge.claimed) {
-          navigate("confirm", { state: { badge } });
-        } else {
-          navigate("create", { state: { badge } });
-        }
-      })
-      .catch(setError);
+    }).then((badge) => {
+      if (badge.claimed) {
+        navigate("confirm", { state: { badge } });
+      } else {
+        navigate("create", { state: { badge } });
+      }
+    });
   };
 
   if (location.state?.badge) {
     useEffect(() => {
-      next(location.state.badge.id);
+      next(location.state.badge.id).catch((error) =>
+        navigate("/error", { state: { error } })
+      );
     });
     return <></>;
   }
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    next(badgeCode);
+    next(badgeCode).catch(setError);
   };
 
   return (
