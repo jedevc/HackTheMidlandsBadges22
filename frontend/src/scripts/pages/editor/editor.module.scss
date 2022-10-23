@@ -13,12 +13,14 @@
 
 .paneEditor {
   width: 100%;
-  height: 100%;
+  height: calc(100% - 1px); // what, why
+  box-sizing: border-box;
 }
 
 .paneError {
   width: 100%;
   height: 100%;
+  box-sizing: border-box;
 
   padding: 1em 2em;
   white-space: pre-wrap;
@@ -33,4 +35,31 @@
 .paneBadge {
   width: 100%;
   height: 100%;
+}
+
+.tabAll {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: #1e1e1e;
+
+  font-family: "Droid Sans Mono", "monospace", monospace;
+  font-size: 14px;
+  color: #c8c8c8;
+}
+.tabTop {
+  margin: 0.25em;
+  flex: 0 0 auto;
+}
+.tabBottom {
+  flex: 1 1 auto;
+  height: 100%;
+}
+.tabItem {
+  padding: 0.25em;
+  margin: 0.25em;
+  border: 1px solid #c8c8c8;
+}
+.tabActive {
+  background-color: #5e5e5e;
 }

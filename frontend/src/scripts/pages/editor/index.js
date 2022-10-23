@@ -25,11 +25,13 @@ const Editor = () => {
   }
 
   let [program, setProgram] = useState("-- loading...");
+  let [saved, setSaved] = useState(true);
   let [errorMessage, setErrorMessage] = useState(errorMessage);
 
   const handleChange = (value) => {
     setProgram(value);
     setErrorMessage("");
+    setSaved(false);
   };
   const handleSave = () => {
     return api({
@@ -39,7 +41,11 @@ const Editor = () => {
       body: {
         value: program,
       },
-    }).catch(console.error);
+    })
+      .then(() => {
+        setSaved(true);
+      })
+      .catch(console.error);
   };
 
   useEffect(() => {
@@ -47,7 +53,10 @@ const Editor = () => {
       path: `store/${id}/code`,
       token: storedKey,
     })
-      .then(({ value: program }) => handleChange(program))
+      .then(({ value: program }) => {
+        handleChange(program);
+        setSaved(true);
+      })
       .catch((e) => {
         if (e.httpCode !== 403) throw e;
         const state = id ? { badge: { id } } : null;
@@ -99,24 +108,36 @@ const Editor = () => {
           color="#3b66fa"
           onClick={handleSave}
         />
-        <Button
-          text="View"
-          icon={<FaGlasses />}
-          color="#ff7365"
-          link={`/view/${id}`}
-        />
       </div>
       <Splitter direction={SplitDirection.Horizontal}>
-        <Splitter direction={SplitDirection.Vertical} initialSizes={[90, 10]}>
-          <div className={styles.paneEditor}>
-            <Monaco
-              value={program}
-              language="lua"
-              theme="vs-dark"
-              onChange={handleChange}
-            />
-          </div>
-          <div className={styles.paneError}>{errorMessage}</div>
+        <Splitter
+          direction={SplitDirection.Vertical}
+          initialSizes={errorMessage ? [85, 15] : [95, 5]}
+        >
+          <Tabbed>
+            <Tabs>
+              <Tab content={`badge.lua${!saved ? " *" : ""}`} active={true} />
+            </Tabs>
+            <Content>
+              <div className={styles.paneEditor}>
+                <Monaco
+                  value={program}
+                  language="lua"
+                  theme="vs-dark"
+                  onChange={handleChange}
+                />
+              </div>
+            </Content>
+          </Tabbed>
+
+          <Tabbed>
+            <Tabs>
+              <Tab content="error.log" active={errorMessage} />
+            </Tabs>
+            <Content>
+              <div className={styles.paneError}>{errorMessage}</div>
+            </Content>
+          </Tabbed>
         </Splitter>
 
         <div className={styles.paneBadge}>
@@ -125,6 +146,27 @@ const Editor = () => {
       </Splitter>
     </div>
   );
+};
+
+const Tabbed = ({ children }) => {
+  return <div className={styles.tabAll}>{children}</div>;
+};
+
+const Tabs = ({ children }) => {
+  return <div className={styles.tabTop}>{children}</div>;
+};
+const Tab = ({ content, active = false, onClick = null }) => {
+  return (
+    <span
+      className={`${styles.tabItem} ${active ? styles.tabActive : ""}`}
+      onClick={onClick}
+    >
+      {content}
+    </span>
+  );
+};
+const Content = ({ children }) => {
+  return <div className={styles.tabBottom}>{children}</div>;
 };
 
 export default Editor;
