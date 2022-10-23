@@ -5,7 +5,7 @@ all:
 internal-build-emscripten: internal-prebuild internal-patch-emscripten tmp/badge.emscripten.js
 
 internal-patch-emscripten:
-	sh -c "cd vendor/lua && patch -p1 < ../../patches/lua/0001-htm-disable-readline.patch"
+	sh -c "cd vendor/lua && patch -p1 --merge < ../../patches/lua/0001-htm-disable-readline.patch"
 
 internal-prebuild:
 	mkdir -p build tmp
