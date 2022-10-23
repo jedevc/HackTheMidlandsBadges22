@@ -1,18 +1,44 @@
 services:
-  reverse-proxy:
+  dev-reverse-proxy:
+    profiles: [dev]
     image: traefik:v2.9
     restart: on-failure
     command:
       - "--api.insecure=true"
+      - "--entrypoints.web.address=:80"
       - "--providers.docker"
       - "--providers.docker.exposedbydefault=false"
     ports:
       - "80:80"
       - "8080:8080"
     volumes:
+      - acme:/acme
       - /var/run/docker.sock:/var/run/docker.sock
 
-  frontend:
+  prod-reverse-proxy:
+    profiles: [prod]
+    image: traefik:v2.9
+    restart: on-failure
+    command:
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--providers.docker"
+      - "--providers.docker.exposedbydefault=false"
+      - "--certificatesResolvers.resolver.acme.email=$ACME_EMAIL"
+      - "--certificatesResolvers.resolver.acme.storage=/acme/acme.json"
+      - "--certificatesresolvers.resolver.acme.httpchallenge=true"
+      - "--certificatesresolvers.resolver.acme.httpchallenge.entrypoint=web"
+      - "--certificatesResolvers.resolver.acme.caServer=$ACME_API"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    labels:
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+
+  dev-frontend:
+    profiles: [dev]
     build:
       context: ./frontend/
       target: dev
@@ -21,13 +47,35 @@ services:
       PLATFORM_SERVER_URL: "http://backend.localhost"
       PLATFORM_DEFAULT_TOKEN: "${FRONTEND_DEFAULT_TOKEN}"
     volumes:
-      - "frontend_emscripten_cache:/usr/lib/emscripten/cache/"
       - "./frontend/src:/usr/src/app/src"
     labels:
       - "traefik.enable=true"
+
       - "traefik.http.routers.frontend.rule=Host(`frontend.localhost`)"
 
-  backend:
+  prod-frontend:
+    profiles: [prod]
+    build:
+      context: ./frontend/
+      target: prod
+      args:
+        PLATFORM_SERVER_URL: "https://api.badges.${DOMAIN}"
+        PLATFORM_DEFAULT_TOKEN: "${FRONTEND_DEFAULT_TOKEN}"
+    restart: on-failure
+    labels:
+      - "traefik.enable=true"
+
+      - "traefik.http.routers.frontend-http.entrypoints=web"
+      - "traefik.http.routers.frontend-http.rule=Host(`badges.$DOMAIN`)"
+      - "traefik.http.routers.frontend-http.middlewares=redirect-to-https"
+
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.rule=Host(`badges.$DOMAIN`)"
+      - "traefik.http.routers.frontend.tls=true"
+      - "traefik.http.routers.frontend.tls.certresolver=resolver"
+
+  dev-backend:
+    profiles: [dev]
     build:
       context: ./backend/
       target: dev
@@ -48,7 +96,44 @@ services:
       - db
     labels:
       - "traefik.enable=true"
+
       - "traefik.http.routers.backend.rule=Host(`backend.localhost`)"
+
+      - "traefik.http.routers.backend.middlewares=backend-cors@docker"
+      - "traefik.http.middlewares.backend-cors.headers.accesscontrolallowmethods=*"
+      - "traefik.http.middlewares.backend-cors.headers.accesscontrolallowheaders=*"
+      - "traefik.http.middlewares.backend-cors.headers.accesscontrolalloworiginlist=*"
+
+  prod-backend:
+    profiles: [prod]
+    build:
+      context: ./backend/
+      target: prod
+    restart: on-failure
+    environment:
+      DB_HOST: db
+      DB_USER: "${DB_USER}"
+      DB_PASSWORD: "${DB_PASSWORD}"
+      DB_DATABASE: "${DB_DATABASE}"
+      SMTP_USERNAME: "${SMTP_USERNAME}"
+      SMTP_PASSWORD: "${SMTP_PASSWORD}"
+      SMTP_SERVER: "${SMTP_SERVER}"
+      SMTP_PORT: "${SMTP_PORT}"
+      MASTER_TOKEN: "${BACKEND_MASTER_TOKEN}"
+    depends_on:
+      - db
+    labels:
+      - "traefik.enable=true"
+
+      - "traefik.http.routers.backend-http.entrypoints=web"
+      - "traefik.http.routers.backend-http.rule=Host(`api.badges.$DOMAIN`)"
+      - "traefik.http.routers.backend-http.middlewares=redirect-to-https"
+
+      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefik.http.routers.backend.rule=Host(`api.badges.$DOMAIN`)"
+      - "traefik.http.routers.backend.tls=true"
+      - "traefik.http.routers.backend.tls.certresolver=resolver"
+
       - "traefik.http.routers.backend.middlewares=backend-cors@docker"
       - "traefik.http.middlewares.backend-cors.headers.accesscontrolallowmethods=*"
       - "traefik.http.middlewares.backend-cors.headers.accesscontrolallowheaders=*"
@@ -70,5 +155,5 @@ services:
     #   retries: 10
 
 volumes:
-  frontend_emscripten_cache:
   db_data:
+  acme:

@@ -1,9 +1,10 @@
+Dockerfile
+.dockerignore
+.gitignore
+
 .venv/
 .mypy_cache/
 __pycache__/
 
 .env
 .env.example
-
-.git
-.gitignore

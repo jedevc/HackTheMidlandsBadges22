@@ -12,9 +12,30 @@ COPY package.json yarn.lock ./
 RUN --mount=type=cache,target=/usr/local/share/.cache/yarn/ \
     yarn install
 
+SHELL ["sh", "--login", "-c"]
+
 FROM build-base as dev
 
 COPY . ./
+RUN make internal-build-emscripten
 
 EXPOSE 80
-CMD ["sh", "--login", "-c", "yarn run serve"]
+CMD yarn run serve
+
+FROM build-base as build
+
+ARG PLATFORM_DEFAULT_TOKEN
+ARG PLATFORM_SERVER_URL
+COPY . ./
+RUN yarn build
+
+FROM caddy:latest as prod
+
+COPY --from=build /usr/src/app/build /usr/share/caddy/
+COPY <<EOF /etc/caddy/Caddyfile
+:80 {
+    root * /usr/share/caddy
+    try_files {path} /
+    file_server
+}
+EOF

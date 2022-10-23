@@ -1,3 +1,7 @@
+Dockerfile
+.dockerignore
+.gitignore
+
 /build/
 /tmp/
 /lua/lua
