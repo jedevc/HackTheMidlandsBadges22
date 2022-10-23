@@ -39,7 +39,9 @@ async def create_user(
         permissions(lambda p: p.users.can_create())
     ),
 ) -> models.User:
-    return crud.create_user(db, name=user.name, email=user.email)
+    db_user = crud.create_user(db, name=user.name, email=user.email)
+    db.commit()
+    return db_user
 
 
 @router.put("/users/{user_id}", tags=["users"], response_model=schemas.User)
@@ -48,7 +50,9 @@ async def replace_user(
     user: models.User = Depends(user(lambda p, u: p.users.can_write(u))),
     db: Session = Depends(crud.get_db),
 ) -> models.User:
-    return crud.update_user(db, user, name=user_data.name, email=user_data.email)
+    user = crud.update_user(db, user, name=user_data.name, email=user_data.email)
+    db.commit()
+    return user
 
 
 @router.patch("/users/{user_id}", tags=["users"], response_model=schemas.User)
@@ -57,7 +61,9 @@ async def update_user(
     user: models.User = Depends(user(lambda p, u: p.users.can_write(u))),
     db: Session = Depends(crud.get_db),
 ) -> models.User:
-    return crud.update_user(db, user, name=user_data.name, email=user_data.email)
+    user = crud.update_user(db, user, name=user_data.name, email=user_data.email)
+    db.commit()
+    return user
 
 
 @router.delete("/users/{user_id}", tags=["users"])
@@ -65,4 +71,5 @@ async def delete_user(
     user: models.User = Depends(user(lambda p, u: p.users.can_write(u))),
     db: Session = Depends(crud.get_db),
 ):
-    return crud.delete_user(db, user)
+    crud.delete_user(db, user)
+    db.commit()

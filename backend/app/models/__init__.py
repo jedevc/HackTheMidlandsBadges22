@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 
 from sqlalchemy import Boolean, Column, ForeignKey, String, Table
 from sqlalchemy.dialects.postgresql import JSONB
@@ -27,8 +27,11 @@ class Badge(Base):
 
     claimed: bool = Column(Boolean, default=False)
 
-    user: "User | None" = relationship("User", back_populates="badges")
+    user: Optional[User] = relationship("User", back_populates="badges")
     codes: list["BadgeCode"] = relationship("BadgeCode", back_populates="badge")
+    store: Optional["Store"] = relationship(
+        "Store", back_populates="badge", uselist=False
+    )
 
 
 class BadgeCode(Base):
@@ -55,4 +58,4 @@ class Store(Base):
 
     data: dict[str, str] = Column(mutable_json_type(dbtype=JSONB, nested=True))
 
-    badge: "Badge | None" = relationship("Badge")
+    badge: Optional[Badge] = relationship("Badge", back_populates="store")

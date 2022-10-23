@@ -37,7 +37,9 @@ async def create_token(
     ),
 ) -> models.APIToken:
     # FIXME: check permissions are proper subset
-    return crud.create_token(db, permissions.dict())
+    token = crud.create_token(db, permissions.dict())
+    db.commit()
+    return token
 
 
 @router.delete("/tokens/{token_id}", tags=["tokens"])
@@ -45,4 +47,5 @@ async def delete_token(
     token: models.APIToken = Depends(token(lambda p, t: p.tokens.can_write(t))),
     db: Session = Depends(crud.get_db),
 ):
-    return crud.delete_token(db, token)
+    crud.delete_token(db, token)
+    db.commit()

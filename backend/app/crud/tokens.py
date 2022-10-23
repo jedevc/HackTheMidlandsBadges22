@@ -9,7 +9,7 @@ from ..utils import SHORTCODE_TOKEN, Token
 def create_token(db: Session, permissions: dict[str, Any]) -> models.APIToken:
     db_token = models.APIToken(permissions=permissions)
     db.add(db_token)
-    db.commit()
+    db.flush()
     db.refresh(db_token)
     return db_token
 
@@ -33,4 +33,3 @@ def get_token(db: Session, token_id: str) -> models.APIToken | None:
 
 def delete_token(db: Session, db_token: models.APIToken):
     db.delete(db_token)
-    db.commit()

@@ -7,7 +7,7 @@ from ..utils import SHORTCODE_BADGE, SHORTCODE_BADGE_CODE, SHORTCODE_USER, Token
 def create_user(db: Session, name: str, email: str) -> models.User:
     db_user = models.User(name=name, email=email)
     db.add(db_user)
-    db.commit()
+    db.flush()
     db.refresh(db_user)
     return db_user
 
@@ -20,14 +20,13 @@ def update_user(
     if email is not None:
         db_user.email = email
     db.add(db_user)
-    db.commit()
+    db.flush()
     db.refresh(db_user)
     return db_user
 
 
 def delete_user(db: Session, db_user: models.User):
     db.delete(db_user)
-    db.commit()
 
 
 def get_users(db: Session, limit: int = 10, offset: int = 0) -> list[models.User]:

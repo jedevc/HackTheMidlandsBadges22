@@ -14,6 +14,6 @@ def get_store(db: Session, badge: models.Badge | None = None) -> models.Store | 
 def create_store(db: Session, badge: models.Badge | None = None) -> models.Store:
     db_store = models.Store(badge=badge, data={})
     db.add(db_store)
-    db.commit()
+    db.flush()
     db.refresh(db_store)
     return db_store

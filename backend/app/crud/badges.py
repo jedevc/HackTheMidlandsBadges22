@@ -7,14 +7,13 @@ from ..utils import SHORTCODE_BADGE, SHORTCODE_BADGE_CODE, Token
 def create_badge(db: Session, user: models.User | None = None) -> models.Badge:
     db_badge = models.Badge(user=user, claimed=user is not None)
     db.add(db_badge)
-    db.commit()
+    db.flush()
     db.refresh(db_badge)
     return db_badge
 
 
 def delete_badge(db: Session, db_badge: models.Badge):
     db.delete(db_badge)
-    db.commit()
 
 
 def get_badges(db: Session, limit: int = 10, offset: int = 0) -> list[models.Badge]:
@@ -42,7 +41,7 @@ def get_badge(db: Session, badge_id: str) -> models.Badge | None:
 def create_badge_code(db: Session, badge: models.Badge) -> models.BadgeCode:
     db_badge_code = models.BadgeCode(badge=badge)
     db.add(db_badge_code)
-    db.commit()
+    db.flush()
     db.refresh(db_badge_code)
     return db_badge_code
 
@@ -71,4 +70,3 @@ def get_badge_code(
 
 def delete_badge_code(db: Session, db_badge_code: models.BadgeCode):
     db.delete(db_badge_code)
-    db.commit()

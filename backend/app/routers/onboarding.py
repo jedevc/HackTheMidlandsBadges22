@@ -31,12 +31,11 @@ async def signup(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Badge already claimed"
         )
-    db_user = crud.create_user(db, name=signup.name, email=signup.email)
-    badge.user = db_user
+    user = crud.create_user(db, name=signup.name, email=signup.email)
+    badge.user = user
     badge.claimed = True
-    db.commit()
 
-    usr = str(Token(SHORTCODE_USER, db_user.id))
+    usr = str(Token(SHORTCODE_USER, user.id))
     bdg = str(Token(SHORTCODE_BADGE, badge.id))
     permissions = schemas.Permissions(
         users=schemas.PermissionsAtom(read=[usr]),
@@ -46,17 +45,16 @@ async def signup(
             keys=schemas.PermissionsAtom(read=["code", "token"], write=["code"]),
         ),
     )
-    db_token = crud.create_token(db, permissions.dict())
-    tkn = str(Token(SHORTCODE_TOKEN, db_token.id))
+    token = crud.create_token(db, permissions.dict())
+    tkn = str(Token(SHORTCODE_TOKEN, token.id))
 
     # helper for admin view, allows easily finding token for given user
     store = crud.get_store(db, badge)
     if store is None:
         store = crud.create_store(db, badge)
     store.data["token"] = tkn
-    db.add(store)
-    db.commit()  # FIXME: only call commit once :)
 
-    print(f"emailing api token <{tkn}> to {db_user.email}")
+    db.commit()
+    print(f"emailing api token <{tkn}> to {user.email}")
 
-    return db_user
+    return user

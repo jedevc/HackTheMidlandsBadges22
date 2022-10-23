@@ -52,7 +52,6 @@ async def write_top_level_key(
     if store is None:
         store = crud.create_store(db)
     store.data[key] = value.value
-    db.add(store)
     db.commit()
     return schemas.KeyValue(key=key, value=value.value)
 
@@ -68,7 +67,6 @@ async def delete_top_level_key(
     store = crud.get_store(db)
     if store and key in store.data:
         store.data.pop(key)
-        db.add(store)
         db.commit()
 
 
@@ -118,7 +116,6 @@ async def write_badge_level_key(
     if store is None:
         store = crud.create_store(db, badge)
     store.data[key] = value.value
-    db.add(store)
     db.commit()
     return schemas.KeyValue(key=key, value=value.value)
 
@@ -135,5 +132,4 @@ async def delete_badge_level(
     store = crud.get_store(db, badge)
     if store and key in store.data:
         store.data.pop(key)
-        db.add(store)
         db.commit()

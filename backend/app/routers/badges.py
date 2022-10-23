@@ -33,7 +33,9 @@ async def create_badge(
         permissions(lambda p: p.badges.can_create())
     ),
 ) -> models.Badge:
-    return crud.create_badge(db)
+    badge = crud.create_badge(db)
+    db.commit()
+    return badge
 
 
 @router.delete("/badges", tags=["badges"])
@@ -41,7 +43,8 @@ async def delete_badge(
     badge: models.Badge = Depends(badge(lambda p, b: p.badges.can_write(b))),
     db: Session = Depends(crud.get_db),
 ):
-    return crud.delete_badge(db, badge)
+    crud.delete_badge(db, badge)
+    db.commit()
 
 
 @router.get(
@@ -73,7 +76,9 @@ async def create_badge_code(
     badge: models.Badge = Depends(badge(lambda p, b: p.badges.can_write(b))),
     db: Session = Depends(crud.get_db),
 ) -> models.BadgeCode:
-    return crud.create_badge_code(db, badge)
+    code = crud.create_badge_code(db, badge)
+    db.commit()
+    return code
 
 
 @router.delete("/badges/{badge_id}/codes/{code_id}", tags=["badges"])
@@ -83,4 +88,5 @@ async def delete_badge_code(
     ),
     db: Session = Depends(crud.get_db),
 ):
-    return crud.delete_badge_code(db, badge_code)
+    crud.delete_badge_code(db, badge_code)
+    db.commit()
