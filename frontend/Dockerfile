@@ -2,10 +2,7 @@
 FROM archlinux as build-base
 
 RUN --mount=type=cache,target=/var/cache/pacman/pkg/ \
-    pacman -Syu --noconfirm clang git emscripten make nodejs yarn
-
-RUN git config --global user.email "bot@jedevc.com" && \
-    git config --global user.name "Bot"
+    pacman -Syu --noconfirm clang patch emscripten make nodejs yarn
 
 WORKDIR /usr/src/app
 COPY package.json yarn.lock ./

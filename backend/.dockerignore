@@ -1,6 +1,7 @@
 Dockerfile
 .dockerignore
 .gitignore
+.git
 
 .venv/
 .mypy_cache/
