@@ -108,6 +108,12 @@ const Editor = () => {
           color="#3b66fa"
           onClick={handleSave}
         />
+        <Button
+          text="View"
+          icon={<FaGlasses />}
+          color="#ff7365"
+          link={`/view/${id}`}
+        />
       </div>
       <Splitter direction={SplitDirection.Horizontal}>
         <Splitter

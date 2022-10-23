@@ -170,14 +170,16 @@ export const ConfirmationPrompt = () => {
         }
         setStoredKey(key);
 
-        return api({
-          method: "PUT",
-          path: `store/${badge.id}/code`,
-          token: key,
-          body: {
-            value: defaultProgram.replaceAll("{user}", user.name),
-          },
-        });
+        if (user) {
+          return api({
+            method: "PUT",
+            path: `store/${badge.id}/code`,
+            token: key,
+            body: {
+              value: defaultProgram.replaceAll("{user}", user.name),
+            },
+          });
+        }
       })
       .then(() => {
         navigate("/dev/" + badge.id);
