@@ -5,11 +5,12 @@ import styles from "./editor.module";
 import Splitter, { SplitDirection } from "@devbookhq/splitter";
 import Monaco from "@monaco-editor/react";
 import Badge from "../../components/badge";
-
 import { FaGlasses, FaSave } from "react-icons/fa";
+
 import { api } from "../../api";
 import Button from "../../components/button";
 import useLocalStorage from "../../../hooks/useLocalStorage";
+import { defaultProgram } from "./default";
 
 const Editor = () => {
   const navigate = useNavigate();
@@ -28,24 +29,13 @@ const Editor = () => {
   let [saved, setSaved] = useState(true);
   let [errorMessage, setErrorMessage] = useState(errorMessage);
 
-  const handleChange = (value) => {
-    setProgram(value);
-    setErrorMessage("");
-    setSaved(false);
-  };
-  const handleSave = () => {
+  const save = (value) => {
     return api({
       method: "PUT",
       path: `store/${id}/code`,
       token: storedKey,
-      body: {
-        value: program,
-      },
-    })
-      .then(() => {
-        setSaved(true);
-      })
-      .catch(console.error);
+      body: { value },
+    });
   };
 
   useEffect(() => {
@@ -54,7 +44,17 @@ const Editor = () => {
       token: storedKey,
     })
       .then(({ value: program }) => {
-        handleChange(program);
+        if (program !== null) return program;
+        return api({
+          path: `users/${id}`,
+          token: storedKey,
+        }).then(({ name }) => {
+          const program = defaultProgram.replaceAll("{user}", name);
+          return save(program).then(() => program);
+        });
+      })
+      .then((program) => {
+        setProgram(program);
         setSaved(true);
       })
       .catch((e) => {
@@ -66,6 +66,17 @@ const Editor = () => {
         navigate("/error", { state: { error } });
       });
   }, [id, storedKey]);
+
+  const handleChange = (value) => {
+    setProgram(value);
+    setErrorMessage("");
+    setSaved(false);
+  };
+
+  const handleSave = () => {
+    save(program);
+    setSaved(true);
+  };
 
   const handleError = (err) => {
     let message = err.toString();

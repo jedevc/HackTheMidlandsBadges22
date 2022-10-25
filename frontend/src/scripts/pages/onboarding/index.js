@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import styles from "./onboarding.module";
 import { api } from "../../api";
-import { defaultProgram } from "./default";
 
 import useLocalStorage from "../../../hooks/useLocalStorage";
 
@@ -169,17 +168,6 @@ export const ConfirmationPrompt = () => {
           throw new Error("Provided token cannot write code");
         }
         setStoredKey(key);
-
-        if (user) {
-          return api({
-            method: "PUT",
-            path: `store/${badge.id}/code`,
-            token: key,
-            body: {
-              value: defaultProgram.replaceAll("{user}", user.name),
-            },
-          });
-        }
       })
       .then(() => {
         navigate("/dev/" + badge.id);
