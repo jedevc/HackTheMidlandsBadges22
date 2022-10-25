@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Route } from "react-router-dom";
 
 import View from "./pages/view";
 import Editor from "./pages/editor";
@@ -15,18 +15,18 @@ import { Home } from "./pages/home";
 const App = () => {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/view/:id" element={<View />} />
-        <Route path="/dev/:id" element={<Editor />} />
-        <Route path="/onboarding" element={<Onboarding />}>
-          <Route index element={<BadgePrompt />} />
-          <Route path="create" element={<UserPrompt />} />
-          <Route path="confirm" element={<ConfirmationPrompt />} />
-        </Route>
-        <Route path="/error" element={<APIError />} />
-        <Route path="*" element={<NotFoundError />} />
-      </Routes>
+      <Route path="/" exact children={<Home />} />
+      <Route path="/view/:id" children={<View />} />
+      <Route path="/dev/:id" children={<Editor />} />
+      <Route path="/onboarding">
+        <Onboarding>
+          <Route path="/onboarding" exact children={<BadgePrompt />} />
+          <Route path="/onboarding/create" children={<UserPrompt />} />
+          <Route path="/onboarding/confirm" children={<ConfirmationPrompt />} />
+        </Onboarding>
+      </Route>
+      <Route path="/error" children={<APIError />} />
+      <Route path="*" children={<NotFoundError />} />
     </BrowserRouter>
   );
 };

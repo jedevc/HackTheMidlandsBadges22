@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import useSWR from "swr";
-import { useNavigate, useParams } from "react-router-dom";
+import { useHistory, useParams } from "react-router-dom";
 import styles from "./view.module";
 
 import Button from "../../components/button";
@@ -9,7 +9,7 @@ import { FaEdit } from "react-icons/fa";
 import { api } from "../../api";
 
 const View = () => {
-  const navigate = useNavigate();
+  const history = useHistory();
 
   const { id } = useParams();
   const { data: badge } = useSWR(
@@ -21,7 +21,7 @@ const View = () => {
   );
   useEffect(() => {
     if (badge && !badge.claimed) {
-      navigate("/onboarding", { state: { badge: { id: id } } });
+      history.push("/onboarding", { badge: { id: id } });
     }
   }, [badge]);
 
@@ -33,7 +33,7 @@ const View = () => {
     api
   );
   if (error) {
-    navigate("/error", { state: { error } });
+    history.push("/error", { error });
   }
   return (
     <>

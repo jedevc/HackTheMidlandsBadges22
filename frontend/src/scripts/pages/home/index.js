@@ -3,7 +3,7 @@ import styles from "./home.module";
 import Button from "../../components/button";
 import QrReader from "react-qr-reader";
 import { FaIdBadge } from "react-icons/fa";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useHistory } from "react-router-dom";
 import useLocalStorage from "../../../hooks/useLocalStorage";
 import { api } from "../../api";
 
@@ -18,7 +18,7 @@ export const Home = ({}) => {
 };
 
 const Login = ({ token }) => {
-  const navigate = useNavigate();
+  const history = useHistory();
   const [storedKey, setStoredKey] = useLocalStorage("token", undefined);
 
   useEffect(() => {
@@ -35,10 +35,10 @@ const Login = ({ token }) => {
         return id;
       })
       .then((id) => {
-        navigate("/dev/" + id);
+        history.push("/dev/" + id);
       })
       .catch((error) => {
-        navigate("/error", { state: { error } });
+        history.push("/error", { error });
       });
   }, []);
 

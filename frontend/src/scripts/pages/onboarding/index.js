@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Outlet, useNavigate, useLocation } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import styles from "./onboarding.module";
 import { api } from "../../api";
 
@@ -22,7 +22,7 @@ const handleChange = (setter) => (e) => {
 };
 
 export const BadgePrompt = () => {
-  const navigate = useNavigate();
+  const history = useHistory();
   const location = useLocation();
   const [badgeCode, setBadgeCode] = useState("");
   const [error, setError] = useState(null);
@@ -33,9 +33,9 @@ export const BadgePrompt = () => {
       token: process.env.PLATFORM_DEFAULT_TOKEN,
     }).then((badge) => {
       if (badge.claimed) {
-        navigate("confirm", { state: { badge } });
+        history.push("/onboarding/confirm", { badge });
       } else {
-        navigate("create", { state: { badge } });
+        history.push("/onboarding/create", { badge });
       }
     });
   };
@@ -43,7 +43,7 @@ export const BadgePrompt = () => {
   if (location.state?.badge) {
     useEffect(() => {
       next(location.state.badge.id).catch((error) =>
-        navigate("/error", { state: { error } })
+        history.push("/error", { error })
       );
     });
     return <></>;
@@ -74,12 +74,12 @@ export const BadgePrompt = () => {
 };
 
 export const UserPrompt = () => {
-  const navigate = useNavigate();
+  const history = useHistory();
   const location = useLocation();
   const badge = location.state?.badge;
   if (!badge) {
     useEffect(() => {
-      navigate("../");
+      history.push("/onboarding");
     });
     return <></>;
   }
@@ -96,7 +96,7 @@ export const UserPrompt = () => {
       body: { name, email, badge: badge.id },
     })
       .then((user) => {
-        navigate("../confirm", { state: { user, badge } });
+        history.push("/onboarding/confirm", { user, badge });
       })
       .catch(setError);
   };
@@ -136,13 +136,13 @@ export const UserPrompt = () => {
 };
 
 export const ConfirmationPrompt = () => {
-  const navigate = useNavigate();
+  const history = useHistory();
   const location = useLocation();
   const badge = location.state?.badge;
   const user = location.state?.user;
   if (!badge) {
     useEffect(() => {
-      navigate("../");
+      history.push("/onboarding");
     });
     return <></>;
   }
@@ -169,10 +169,6 @@ export const ConfirmationPrompt = () => {
   );
 };
 
-export const Onboarding = () => {
-  return (
-    <div className={styles.pageContainer}>
-      <Outlet />
-    </div>
-  );
+export const Onboarding = ({ children }) => {
+  return <div className={styles.pageContainer}>{children}</div>;
 };

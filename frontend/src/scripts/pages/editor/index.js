@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import React, { useEffect, useState, useRef } from "react";
+import { useHistory, useParams } from "react-router-dom";
 import styles from "./editor.module";
 
 import Splitter, { SplitDirection } from "@devbookhq/splitter";
@@ -10,24 +10,28 @@ import { FaGlasses, FaSave } from "react-icons/fa";
 import { api } from "../../api";
 import Button from "../../components/button";
 import useLocalStorage from "../../../hooks/useLocalStorage";
+import useBoundingClientRect from "../../../hooks/useBoundingClientRect";
 import { defaultProgram } from "./default";
 
 const Editor = () => {
-  const navigate = useNavigate();
+  const history = useHistory();
   const { id } = useParams();
 
   const [storedKey, setStoredKey] = useLocalStorage("token", undefined);
   if (!storedKey) {
     const state = id ? { badge: { id } } : null;
     useEffect(() => {
-      navigate("/onboarding", { state });
+      history.push("/onboarding", state);
     });
     return <></>;
   }
 
-  let [program, setProgram] = useState("-- loading...");
-  let [saved, setSaved] = useState(true);
-  let [errorMessage, setErrorMessage] = useState(errorMessage);
+  const [program, setProgram] = useState("-- loading...");
+  const [saved, setSaved] = useState(true);
+  const [errorMessage, setErrorMessage] = useState(errorMessage);
+
+  const editorRef = useRef(null);
+  const editorRect = useBoundingClientRect(editorRef);
 
   const save = (value) => {
     return api({
@@ -60,10 +64,10 @@ const Editor = () => {
       .catch((e) => {
         if (e.httpCode !== 403) throw e;
         const state = id ? { badge: { id } } : null;
-        navigate("/onboarding", { state });
+        history.push("/onboarding", state);
       })
       .catch((error) => {
-        navigate("/error", { state: { error } });
+        history.push("/error", { error });
       });
   }, [id, storedKey]);
 
@@ -110,8 +114,40 @@ const Editor = () => {
     setErrorMessage(message);
   };
 
+  const editorPane = (
+    <Tabbed>
+      <Tabs>
+        <Tab content={`badge.lua${!saved ? " *" : ""}`} active={true} />
+      </Tabs>
+      <Content>
+        <div className={styles.paneEditor}>
+          <Monaco
+            value={program}
+            language="lua"
+            theme="vs-dark"
+            onChange={handleChange}
+          />
+        </div>
+      </Content>
+    </Tabbed>
+  );
+  const errorPane = (
+    <Tabbed>
+      <Tabs>
+        <Tab content="error.log" active={errorMessage} />
+      </Tabs>
+      <Content>
+        <div className={styles.paneError}>{errorMessage}</div>
+      </Content>
+    </Tabbed>
+  );
+  const badgePane = (
+    <div className={styles.paneBadge}>
+      <Badge program={program} onError={handleError} />
+    </div>
+  );
   return (
-    <div className={styles.editor}>
+    <div className={styles.editor} ref={editorRef}>
       <div className={styles.paneToolbar}>
         <Button
           text="Save"
@@ -126,41 +162,20 @@ const Editor = () => {
           link={`/view/${id}`}
         />
       </div>
-      <Splitter direction={SplitDirection.Horizontal}>
-        <Splitter
-          direction={SplitDirection.Vertical}
-          initialSizes={errorMessage ? [85, 15] : [95, 5]}
-        >
-          <Tabbed>
-            <Tabs>
-              <Tab content={`badge.lua${!saved ? " *" : ""}`} active={true} />
-            </Tabs>
-            <Content>
-              <div className={styles.paneEditor}>
-                <Monaco
-                  value={program}
-                  language="lua"
-                  theme="vs-dark"
-                  onChange={handleChange}
-                />
-              </div>
-            </Content>
-          </Tabbed>
-
-          <Tabbed>
-            <Tabs>
-              <Tab content="error.log" active={errorMessage} />
-            </Tabs>
-            <Content>
-              <div className={styles.paneError}>{errorMessage}</div>
-            </Content>
-          </Tabbed>
+      {editorRect && editorRect.width < 600 ? (
+        editorPane
+      ) : (
+        <Splitter direction={SplitDirection.Horizontal}>
+          <Splitter
+            direction={SplitDirection.Vertical}
+            initialSizes={errorMessage ? [85, 15] : [95, 5]}
+          >
+            {editorPane}
+            {errorPane}
+          </Splitter>
+          {badgePane}
         </Splitter>
-
-        <div className={styles.paneBadge}>
-          <Badge program={program} onError={handleError} />
-        </div>
-      </Splitter>
+      )}
     </div>
   );
 };
