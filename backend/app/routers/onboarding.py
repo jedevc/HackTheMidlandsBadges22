@@ -18,6 +18,7 @@ class Signup(schemas.UserCreate):
     badge: str
 
 
+PLATFORM_CLIENT_URL = os.environ.get("PLATFORM_CLIENT_URL")
 SMTP_USERNAME = os.environ.get("SMTP_USERNAME")
 SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD")
 SMTP_SERVER = os.environ.get("SMTP_SERVER")
@@ -66,14 +67,15 @@ async def signup(
         store = crud.create_store(db, badge)
     store.data["token"] = tkn
 
-    if SMTP_USERNAME and SMTP_SERVER:
-        mail = MIMEMultipart("alternative")
-        mail["Subject"] = onboarding_subject
-        mail["From"] = SMTP_USERNAME
-        mail["To"] = user.email
-        text = MIMEText(onboarding_template.format(user.name, user.email, tkn), "plain")
-        mail.attach(text)
+    mail = MIMEMultipart("alternative")
+    mail["Subject"] = onboarding_subject
+    mail["From"] = SMTP_USERNAME
+    mail["To"] = user.email
+    url = f"{PLATFORM_CLIENT_URL}?token={tkn}"
+    text = MIMEText(onboarding_template.format(user.name, user.email, url), "plain")
+    mail.attach(text)
 
+    if SMTP_USERNAME and SMTP_SERVER:
         ssl_context = ssl.create_default_context()
         service = smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT, context=ssl_context)
         if SMTP_PASSWORD:
@@ -82,7 +84,7 @@ async def signup(
         service.quit()
     else:
         # developer fallback!
-        print(f"emailing api token <{tkn}> to {user.email}")
+        print(mail.as_string())
 
     db.commit()
 
@@ -96,7 +98,7 @@ Hi {0}!
 You're receiving this email because someone signed up for the HackTheMidlands
 interactive badge service using your email address "{1}".
 
-Your API token for your badge is: "{2}"
+Click here to login and edit your badge: "{2}"
 
 If you didn't request this email, then you ignore this safely.
 

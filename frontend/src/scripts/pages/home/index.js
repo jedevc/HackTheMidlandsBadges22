@@ -1,17 +1,58 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styles from "./home.module";
 import Button from "../../components/button";
 import QrReader from "react-qr-reader";
 import { FaIdBadge } from "react-icons/fa";
-
-const token = /^(.*?)([a-z]{3})([a-zA-Z0-9]+)$/;
+import { useLocation, useNavigate } from "react-router-dom";
+import useLocalStorage from "../../../hooks/useLocalStorage";
+import { api } from "../../api";
 
 export const Home = ({}) => {
+  const location = useLocation();
+  const query = new URLSearchParams(location.search);
+  if (query.has("token")) {
+    return <Login token={query.get("token")} />;
+  } else {
+    return <Scanner />;
+  }
+};
+
+const Login = ({ token }) => {
+  const navigate = useNavigate();
+  const [storedKey, setStoredKey] = useLocalStorage("token", undefined);
+
+  useEffect(() => {
+    api({ path: "permissions", token })
+      .then((permissions) => {
+        const id = permissions.store.badges.write[0];
+        if (!permissions.store.keys.read.includes("code")) {
+          throw new Error("Provided token cannot read code");
+        }
+        if (!permissions.store.keys.write.includes("code")) {
+          throw new Error("Provided token cannot write code");
+        }
+        setStoredKey(token);
+        return id;
+      })
+      .then((id) => {
+        navigate("/dev/" + id);
+      })
+      .catch((error) => {
+        navigate("/error", { state: { error } });
+      });
+  }, []);
+
+  return <></>;
+};
+
+const reToken = /^(.*?)([a-z]{3})([a-zA-Z0-9]+)$/;
+
+const Scanner = () => {
   const [target, setTarget] = useState();
 
   const handleScan = (result) => {
     if (result) {
-      const match = result.match(token);
+      const match = result.match(reToken);
       if (!match) return;
       const [prefix, shortcode, tkn] = match.slice(1);
       if (shortcode.toLowerCase() == "bdg") {

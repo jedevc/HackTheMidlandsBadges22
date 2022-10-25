@@ -3,8 +3,6 @@ import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import styles from "./onboarding.module";
 import { api } from "../../api";
 
-import useLocalStorage from "../../../hooks/useLocalStorage";
-
 const Prompt = ({ title, error, children }) => {
   return (
     <div className={styles.page}>
@@ -149,63 +147,24 @@ export const ConfirmationPrompt = () => {
     return <></>;
   }
 
-  const [storedKey, setStoredKey] = useLocalStorage("token", undefined);
-
-  const [key, setKey] = useState("");
-  const [error, setError] = useState(null);
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    api({ path: "permissions", token: key })
-      .then((permissions) => {
-        if (!permissions.store.badges.write.includes(badge.id)) {
-          throw new Error("Provided token cannot connect to target badge");
-        }
-        if (!permissions.store.keys.read.includes("code")) {
-          throw new Error("Provided token cannot read code");
-        }
-        if (!permissions.store.keys.write.includes("code")) {
-          throw new Error("Provided token cannot write code");
-        }
-        setStoredKey(key);
-      })
-      .then(() => {
-        navigate("/dev/" + badge.id);
-      })
-      .catch(setError);
-  };
-
   return (
-    <Prompt title="Sign Up | Email Confirmation" error={error}>
+    <Prompt title="Sign Up | Email Confirmation">
       {user ? (
         <>
           <p>
             You should have received an email confirmation to your chosen email
             address!
           </p>
-          <p>
-            Enter the api key from the email to finish setting up your badge.
-          </p>
+          <p>Click the link in the email to login.</p>
         </>
       ) : (
         <>
           <p>
             This badge has already been claimed - if you were the one to claim
-            it, then enter the code you received in your email.
+            it, then click the link you've received in your email.
           </p>
         </>
       )}
-      <form className={styles.form} onSubmit={handleSubmit}>
-        <label htmlFor="name">Your key</label>
-        <input
-          name="name"
-          type="password"
-          placeholder="API Key"
-          value={key}
-          onChange={handleChange(setKey)}
-        ></input>
-        <input type="submit" value="Confirm"></input>
-      </form>
     </Prompt>
   );
 };

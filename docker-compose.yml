@@ -90,6 +90,7 @@ services:
       SMTP_SERVER: "${SMTP_SERVER}"
       SMTP_PORT: "${SMTP_PORT}"
       MASTER_TOKEN: "${BACKEND_MASTER_TOKEN}"
+      PLATFORM_CLIENT_URL: "http://frontend.localhost"
     volumes:
       - "./backend/app:/usr/src/app/app"
     depends_on:
@@ -120,6 +121,7 @@ services:
       SMTP_SERVER: "${SMTP_SERVER}"
       SMTP_PORT: "${SMTP_PORT}"
       MASTER_TOKEN: "${BACKEND_MASTER_TOKEN}"
+      PLATFORM_CLIENT_URL: "https://badges.$DOMAIN"
     depends_on:
       - db
     labels:
