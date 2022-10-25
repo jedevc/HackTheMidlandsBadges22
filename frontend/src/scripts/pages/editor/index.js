@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useHistory, useParams } from "react-router-dom";
+import { useHistory, useParams, Prompt } from "react-router-dom";
 import styles from "./editor.module";
 
 import Splitter, { SplitDirection } from "@devbookhq/splitter";
@@ -114,6 +114,20 @@ const Editor = () => {
     setErrorMessage(message);
   };
 
+  useEffect(() => {
+    if (!saved) {
+      const handleTabClose = (event) => {
+        event.preventDefault();
+        event.returnValue = "";
+        return event.returnValue;
+      };
+      window.addEventListener("beforeunload", handleTabClose);
+      return () => {
+        window.removeEventListener("beforeunload", handleTabClose);
+      };
+    }
+  }, [saved]);
+
   const editorPane = (
     <Tabbed>
       <Tabs>
@@ -148,6 +162,10 @@ const Editor = () => {
   );
   return (
     <div className={styles.editor} ref={editorRef}>
+      <Prompt
+        when={!saved}
+        message="This page is asking you to confirm that you want to leave — information you've entered may not be saved."
+      />
       <div className={styles.paneToolbar}>
         <Button
           text="Save"
