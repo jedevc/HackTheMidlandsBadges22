@@ -21,7 +21,7 @@ class Signup(schemas.UserCreate):
 SMTP_USERNAME = os.environ.get("SMTP_USERNAME")
 SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD")
 SMTP_SERVER = os.environ.get("SMTP_SERVER")
-SMTP_PORT = int(os.environ.get("SMTP_PORT", 0))
+SMTP_PORT = int(os.environ.get("SMTP_PORT") or 0)
 
 
 @router.post(

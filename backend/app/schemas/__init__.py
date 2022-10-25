@@ -8,7 +8,7 @@ from .users import *
 
 class KeyValue(BaseModel):
     key: str
-    value: str
+    value: str | None
 
 
 class Value(BaseModel):

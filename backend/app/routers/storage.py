@@ -31,12 +31,10 @@ async def read_top_level_key(
 ) -> schemas.KeyValue | None:
     if not permissions.store.can_read("_", key):
         raise PERMISSION_EXCEPTION
+    value = None
     if store := crud.get_store(db):
         value = store.data.get(key)
-        if value is None:
-            raise HTTPException(status.HTTP_404_NOT_FOUND, "Key not found")
-        return schemas.KeyValue(key=key, value=value)
-    return None
+    return schemas.KeyValue(key=key, value=value)
 
 
 @router.put("/store/_/{key}", tags=["storage"])
@@ -94,12 +92,10 @@ async def read_badge_level_key(
 ) -> schemas.KeyValue | None:
     if not permissions.store.can_read(Token(SHORTCODE_BADGE, badge.id), key):
         raise PERMISSION_EXCEPTION
+    value = None
     if store := crud.get_store(db, badge):
         value = store.data.get(key)
-        if value is None:
-            raise HTTPException(status.HTTP_404_NOT_FOUND, "Key not found")
-        return schemas.KeyValue(key=key, value=value)
-    return None
+    return schemas.KeyValue(key=key, value=value)
 
 
 @router.put("/store/{badge_id}/{key}", tags=["storage"])
