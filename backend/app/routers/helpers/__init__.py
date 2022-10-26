@@ -1,7 +1,8 @@
 import os
 from typing import Callable
 
-from fastapi import Depends, Header, HTTPException, status
+from fastapi import Depends, HTTPException, status
+from fastapi.security import APIKeyHeader
 from sqlalchemy.orm import Session
 
 from ... import crud, models, schemas
@@ -15,10 +16,12 @@ from ...utils import (
 
 PERMISSION_EXCEPTION = HTTPException(status.HTTP_403_FORBIDDEN, "Permission denied")
 
+X_TOKEN = APIKeyHeader(name="x-token")
+
 
 def permissions(f: Callable[[schemas.Permissions], bool] | None = None):
     async def checker(
-        x_token: str = Header(),
+        x_token: str = Depends(X_TOKEN),
         db: Session = Depends(crud.get_db),
     ) -> schemas.Permissions:
         if x_token == os.environ["MASTER_TOKEN"]:
