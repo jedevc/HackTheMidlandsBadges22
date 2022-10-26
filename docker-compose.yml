@@ -140,6 +140,19 @@ services:
       - "traefik.http.middlewares.backend-cors.headers.accesscontrolallowheaders=*"
       - "traefik.http.middlewares.backend-cors.headers.accesscontrolalloworiginlist=*"
 
+  dev-db-web:
+    profiles: [dev]
+    image: sosedoff/pgweb
+    restart: on-failure
+    environment:
+      DATABASE_URL: "postgres://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_DATABASE}?sslmode=disable"
+    depends_on:
+      - db
+    labels:
+      - "traefik.enable=true"
+
+      - "traefik.http.routers.db.rule=Host(`db.localhost`)"
+
   db:
     image: postgres
     restart: on-failure
