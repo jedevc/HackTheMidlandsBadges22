@@ -34,5 +34,17 @@ COPY <<EOF /etc/caddy/Caddyfile
     root * /usr/share/caddy
     try_files {path} /
     file_server
+    
+    @assets {
+        path "*.css"
+        path "*.js"
+        path "*.wasm"
+    }
+    handle @assets {
+        header Cache-Control "public, max-age=604800, must-revalidate"
+    }
+    handle {
+        header Cache-Control "no-cache, no-store, must-revalidate"
+    }
 }
 EOF

@@ -16,7 +16,7 @@ module.exports = {
   },
   output: {
     globalObject: "self",
-    filename: "[name].bundle.js",
+    filename: "[name].[fullhash].bundle.js",
     path: path.resolve(__dirname, "build/"),
     publicPath: "/",
   },
@@ -93,9 +93,6 @@ module.exports = {
       {
         test: /\.wasm$/,
         type: "asset/resource",
-        generator: {
-          filename: "[name][ext]",
-        },
       },
     ],
   },

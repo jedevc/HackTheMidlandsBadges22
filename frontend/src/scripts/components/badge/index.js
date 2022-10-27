@@ -1,7 +1,7 @@
 import React, { useCallback, useState, useEffect } from "react";
 
 import createBadgeModule from "../../../../tmp/badge.emscripten.js";
-import "../../../../tmp/badge.emscripten.wasm";
+import badgeWasm from "../../../../tmp/badge.emscripten.wasm";
 
 import styles from "./badge.module";
 import BadgeOutline from "../../../assets/badge-outline.svg";
@@ -107,7 +107,15 @@ const Badge = ({ program, onError = null }) => {
 
     let cancel;
     if (badgeModule === null) {
-      cancel = createBadgeModule().then((Module) => {
+      const settings = {
+        locateFile: (path, prefix) => {
+          if (path.endsWith("badge.emscripten.wasm")) {
+            return badgeWasm;
+          }
+          return prefix + path;
+        },
+      };
+      cancel = createBadgeModule(settings).then((Module) => {
         badgeModule = Module;
         return setup();
       });
