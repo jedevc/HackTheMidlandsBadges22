@@ -112,6 +112,7 @@ services:
       target: prod
     restart: on-failure
     environment:
+      UVICORN_WORKERS: 8
       DB_HOST: db
       DB_USER: "${DB_USER}"
       DB_PASSWORD: "${DB_PASSWORD}"
