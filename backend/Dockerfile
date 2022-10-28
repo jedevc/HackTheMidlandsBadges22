@@ -30,5 +30,5 @@ COPY --chmod=0755 <<-"EOF" /start.sh
 	#!/bin/sh
 	set -e
 	wait-for-it "${DB_HOST}:5432"
-	uvicorn "app:app" --host=0.0.0.0 --port=80 --workers="\${UVICORN_WORKERS:=1}"
+	uvicorn "app:app" --host=0.0.0.0 --port=80 --workers="${UVICORN_WORKERS:=1}"
 EOF
