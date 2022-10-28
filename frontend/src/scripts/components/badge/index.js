@@ -63,22 +63,38 @@ const Badge = ({ program, onError = null }) => {
         b.step();
       });
 
+      const getEventXY = (e) => {
+        let targetX, targetY;
+        if (e.touches) {
+          targetX = e.touches[0].screenX;
+          targetY = e.touches[0].screenY;
+        } else {
+          targetX = e.clientX;
+          targetY = e.clientY;
+        }
+        return [targetX, targetY];
+      };
+
       let down = null;
       const mouseDown = (e) => {
-        down = { x: e.clientX, y: e.clientY };
+        let [x, y] = getEventXY(e);
+        down = { x, y };
       };
       controlEl.addEventListener("mousedown", mouseDown);
-      const mouseUp = (e) => {
+      window.addEventListener("touchstart", mouseDown);
+      const mouseUp = () => {
         down = null;
         globals.control_x = 0;
         globals.control_y = 0;
         controlEl.style.transform = "";
       };
       window.addEventListener("mouseup", mouseUp);
+      window.addEventListener("touchend", mouseUp);
       const mouseMove = (e) => {
         if (!down) return;
-        let dx = e.clientX - down.x;
-        let dy = e.clientY - down.y;
+        let [targetX, targetY] = getEventXY(e);
+        let dx = targetX - down.x;
+        let dy = targetY - down.y;
         let dz = Math.sqrt(dx * dx + dy * dy);
         let mz = controlEl.getBoundingClientRect().width;
         if (dz > mz) {
@@ -95,11 +111,15 @@ const Badge = ({ program, onError = null }) => {
         };
       };
       window.addEventListener("mousemove", mouseMove);
+      window.addEventListener("touchmove", mouseMove);
 
       return () => {
         controlEl.removeEventListener("mousedown", mouseDown);
+        controlEl.removeEventListener("touchstart", mouseDown);
         window.removeEventListener("mouseup", mouseUp);
-        window.removeEventListener("mousemove", mouseUp);
+        window.removeEventListener("touchend", mouseUp);
+        window.removeEventListener("mousemove", mouseMove);
+        window.removeEventListener("touchmove", mouseMove);
         loopCancel();
         b.delete();
       };
