@@ -2,6 +2,7 @@ const path = require("path");
 const spawn = require("child_process").spawnSync;
 
 const webpack = require("webpack");
+const CopyWebpackPlugin = require("copy-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const WatchExternalFilesPlugin = require("webpack-watch-files-plugin").default;
@@ -122,6 +123,9 @@ module.exports = {
     }),
     new HtmlWebpackPlugin({
       template: "./src/pages/index.html",
+    }),
+    new CopyWebpackPlugin({
+      patterns: [{ from: "static" }],
     }),
     new MiniCssExtractPlugin({
       filename: isDevelopment ? "[name].css" : "[name].[fullhash].css",

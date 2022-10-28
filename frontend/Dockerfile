@@ -36,6 +36,7 @@ COPY <<EOF /etc/caddy/Caddyfile
     file_server
     
     @assets {
+        path "*.ico"
         path "*.css"
         path "*.js"
         path "*.wasm"
