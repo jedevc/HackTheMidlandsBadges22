@@ -5,6 +5,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from .. import crud, models, schemas
@@ -15,6 +16,10 @@ router = APIRouter()
 
 
 class Signup(schemas.UserCreate):
+    badge: str
+
+
+class Resend(BaseModel):
     badge: str
 
 
@@ -67,6 +72,46 @@ async def signup(
         store = crud.create_store(db, badge)
     store.data["token"] = tkn
 
+    sendmail(user, usr, bdg, tkn)
+    db.commit()
+
+    return user
+
+
+@router.post(
+    "/resend",
+    tags=["onboarding"],
+    response_model=schemas.User,
+)
+async def resend(
+    signup: Resend,
+    db: Session = Depends(crud.get_db),
+) -> models.User:
+    badge = crud.get_badge(db, signup.badge)
+    if not badge:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Badge not found"
+        )
+    if not badge.claimed or not badge.user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Badge not claimed"
+        )
+
+    store = crud.get_store(db, badge)
+    if store is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="No store found"
+        )
+    tkn = store.data["token"]
+
+    usr = str(Token(SHORTCODE_USER, badge.user.id))
+    bdg = str(Token(SHORTCODE_BADGE, badge.id))
+
+    sendmail(badge.user, usr, bdg, tkn)
+    return badge.user
+
+
+def sendmail(user: models.User, usr: str, bdg: str, tkn: str):
     mail = MIMEMultipart("alternative")
     mail["Subject"] = onboarding_subject
     mail["From"] = SMTP_USERNAME
@@ -85,10 +130,6 @@ async def signup(
     else:
         # developer fallback!
         print(mail.as_string())
-
-    db.commit()
-
-    return user
 
 
 onboarding_subject = "Welcome to the HackTheMidlands Badge Platform!"

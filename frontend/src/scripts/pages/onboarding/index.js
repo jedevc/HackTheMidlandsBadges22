@@ -4,7 +4,7 @@ import styles from "./onboarding.module";
 
 import { api } from "../../api";
 import Button from "../../components/button";
-import { FaEdit, FaIdBadge } from "react-icons/fa";
+import { FaEdit, FaIdBadge, FaMailBulk } from "react-icons/fa";
 
 const common = (
   <>
@@ -155,6 +155,8 @@ export const ConfirmationPrompt = () => {
   const location = useLocation();
   const badge = location.state?.badge;
   const user = location.state?.user;
+  const [error, setError] = useState(null);
+  const [sent, setSent] = useState(false);
   if (!badge) {
     useEffect(() => {
       history.push("/onboarding");
@@ -162,9 +164,18 @@ export const ConfirmationPrompt = () => {
     return <></>;
   }
 
+  const resendMail = () => {
+    setSent(true);
+    return api({
+      path: "resend",
+      method: "POST",
+      body: { badge: badge.id },
+    }).catch(setError);
+  };
+
   return (
-    <Prompt title="Sign Up | Email Confirmation">
-      {user ? (
+    <Prompt title="Sign Up | Email Confirmation" error={error}>
+      {user || sent ? (
         <>
           <p>
             You should have received an email confirmation to your chosen email
@@ -179,24 +190,30 @@ export const ConfirmationPrompt = () => {
             If you were the one to claim it, then click the link you've received
             in your email.
           </p>
+          <p style={{ textAlign: "center" }}>
+            <Button
+              color="red"
+              text="Resend Email"
+              icon={<FaMailBulk />}
+              onClick={resendMail}
+            />
+          </p>
         </>
       )}
-      <p>
-        <br />
+      <p style={{ textAlign: "center" }}>
+        <Button
+          color="#ff7365"
+          text="View badge"
+          link={`/view/${badge.id}`}
+          icon={<FaIdBadge />}
+        />
+        <Button
+          color="#ff7365"
+          text="Edit badge"
+          link={`/dev/${badge.id}`}
+          icon={<FaEdit />}
+        />
       </p>
-      <Button
-        color="#ff7365"
-        text="View badge"
-        link={`/view/${badge.id}`}
-        icon={<FaIdBadge />}
-      />
-      or
-      <Button
-        color="#ff7365"
-        text="Edit badge"
-        link={`/dev/${badge.id}`}
-        icon={<FaEdit />}
-      />
     </Prompt>
   );
 };
