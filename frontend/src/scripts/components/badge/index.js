@@ -81,7 +81,7 @@ const Badge = ({ program, onError = null }) => {
         down = { x, y };
       };
       controlEl.addEventListener("mousedown", mouseDown);
-      window.addEventListener("touchstart", mouseDown);
+      controlEl.addEventListener("touchstart", mouseDown);
       const mouseUp = () => {
         down = null;
         globals.control_x = 0;

@@ -1,7 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { useHistory, useLocation } from "react-router-dom";
 import styles from "./onboarding.module";
+
 import { api } from "../../api";
+import Button from "../../components/button";
+import { FaEdit, FaIdBadge } from "react-icons/fa";
+
+const common = (
+  <>
+    <p>Welcome to the HackTheMidlands Badge Editor! 🎉</p>
+    <p>
+      <b>
+        Please only setup <i>your</i> badge!
+      </b>
+    </p>
+    <hr />
+  </>
+);
 
 const Prompt = ({ title, error, children }) => {
   return (
@@ -56,7 +71,7 @@ export const BadgePrompt = () => {
 
   return (
     <Prompt title="Sign Up" error={error}>
-      <p>Welcome to the HackTheMidlands Badge Editor! 🎉</p>
+      {common}
       <p>To continue, please enter the code that appears on your badge.</p>
       <form className={styles.form} onSubmit={handleSubmit}>
         <label htmlFor="badge-code">Badge code</label>
@@ -103,7 +118,7 @@ export const UserPrompt = () => {
 
   return (
     <Prompt title="Sign Up | Create user" error={error}>
-      <p>Welcome to the HackTheMidlands Badge Editor! 🎉</p>
+      {common}
       <p>
         To edit the contents of your badge, you'll need to sign up with your
         name and email address. We'll use your name to automatically populate
@@ -159,12 +174,29 @@ export const ConfirmationPrompt = () => {
         </>
       ) : (
         <>
+          <p>This badge has already been claimed.</p>
           <p>
-            This badge has already been claimed - if you were the one to claim
-            it, then click the link you've received in your email.
+            If you were the one to claim it, then click the link you've received
+            in your email.
           </p>
         </>
       )}
+      <p>
+        <br />
+      </p>
+      <Button
+        color="#ff7365"
+        text="View badge"
+        link={`/view/${badge.id}`}
+        icon={<FaIdBadge />}
+      />
+      or
+      <Button
+        color="#ff7365"
+        text="Edit badge"
+        link={`/dev/${badge.id}`}
+        icon={<FaEdit />}
+      />
     </Prompt>
   );
 };
