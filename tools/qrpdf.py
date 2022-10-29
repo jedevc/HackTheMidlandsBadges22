@@ -1,5 +1,6 @@
 import argparse
 import qrcode
+import sys
 import itertools
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import inch, cm
@@ -58,7 +59,7 @@ def main():
                     height,
                 )
 
-                if text := texts[i]:
+                if text := texts[idx]:
                     text_width = stringWidth(text, *font)
                     c.drawString(
                         xppad + xpad + x * (width + xpad) + width / 2 - text_width / 2,
