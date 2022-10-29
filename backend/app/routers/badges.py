@@ -38,7 +38,29 @@ async def create_badge(
     return badge
 
 
-@router.delete("/badges", tags=["badges"])
+@router.put("/badges/{badge_id}", tags=["badges"], response_model=schemas.Badge)
+async def replace_badge(
+    badge_data: schemas.BadgeCreate,
+    badge: models.Badge = Depends(badge(lambda p, b: p.badges.can_write(b))),
+    db: Session = Depends(crud.get_db),
+) -> models.Badge:
+    badge = crud.update_badge(db, badge, claimed=badge_data.claimed)
+    db.commit()
+    return badge
+
+
+@router.patch("/badges/{badge_id}", tags=["badges"], response_model=schemas.Badge)
+async def update_badge(
+    badge_data: schemas.BadgeUpdate,
+    badge: models.Badge = Depends(badge(lambda p, b: p.badges.can_write(b))),
+    db: Session = Depends(crud.get_db),
+) -> models.Badge:
+    badge = crud.update_badge(db, badge, claimed=badge_data.claimed)
+    db.commit()
+    return badge
+
+
+@router.delete("/badges/{badge_id}", tags=["badges"])
 async def delete_badge(
     badge: models.Badge = Depends(badge(lambda p, b: p.badges.can_write(b))),
     db: Session = Depends(crud.get_db),

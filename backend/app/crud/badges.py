@@ -12,6 +12,16 @@ def create_badge(db: Session, user: models.User | None = None) -> models.Badge:
     return db_badge
 
 
+def update_badge(
+    db: Session, db_badge: models.Badge, claimed: bool | None
+) -> models.Badge:
+    if claimed is not None:
+        db_badge.claimed = claimed
+    db.add(db_badge)
+    db.flush()
+    return db_badge
+
+
 def delete_badge(db: Session, db_badge: models.Badge):
     db.delete(db_badge)
 

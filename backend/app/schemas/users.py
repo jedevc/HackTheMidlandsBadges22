@@ -37,4 +37,5 @@ class User(UserBase):
     badges: list[Badge]
 
     class Config:
+        getter_dict = TokenGetter(id=SHORTCODE_USER)
         orm_mode = True
