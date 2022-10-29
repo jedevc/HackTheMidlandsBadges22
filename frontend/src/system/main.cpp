@@ -17,7 +17,7 @@ extern "C" {
 using namespace emscripten;
 #endif
 
-#define BUDGET 100000
+#define BUDGET 1000000
 #define BUDGET_STEPS 1000
 
 using std::map;
