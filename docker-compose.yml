@@ -136,10 +136,13 @@ services:
       - "traefik.http.routers.backend.tls=true"
       - "traefik.http.routers.backend.tls.certresolver=resolver"
 
-      - "traefik.http.routers.backend.middlewares=backend-cors@docker"
+      - "traefik.http.routers.backend.middlewares=backend-cors@docker,backend-limit@docker"
       - "traefik.http.middlewares.backend-cors.headers.accesscontrolallowmethods=*"
       - "traefik.http.middlewares.backend-cors.headers.accesscontrolallowheaders=*"
       - "traefik.http.middlewares.backend-cors.headers.accesscontrolalloworiginlist=*"
+
+      - "traefik.http.middlewares.backend-limit.buffering.maxRequestBodyBytes=1000000"
+      - "traefik.http.middlewares.backend-limit.buffering.maxResponseBodyBytes=10000000"
 
   dev-db-web:
     profiles: [dev]
