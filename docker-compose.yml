@@ -60,7 +60,7 @@ services:
       context: ./frontend/
       target: prod
       args:
-        PLATFORM_SERVER_URL: "https://api.badges.${DOMAIN}"
+        PLATFORM_SERVER_URL: "https://badges-api.${DOMAIN}"
         PLATFORM_DEFAULT_TOKEN: "${FRONTEND_DEFAULT_TOKEN}"
     restart: on-failure
     labels:
@@ -129,10 +129,10 @@ services:
       - "traefik.enable=true"
 
       - "traefik.http.routers.backend-http.entrypoints=web"
-      - "traefik.http.routers.backend-http.rule=Host(`api.badges.$DOMAIN`)"
+      - "traefik.http.routers.backend-http.rule=Host(`badges-api.$DOMAIN`)"
 
       - "traefik.http.routers.backend.entrypoints=websecure"
-      - "traefik.http.routers.backend.rule=Host(`api.badges.$DOMAIN`)"
+      - "traefik.http.routers.backend.rule=Host(`badges-api.$DOMAIN`)"
       - "traefik.http.routers.backend.tls=true"
       - "traefik.http.routers.backend.tls.certresolver=resolver"
 
