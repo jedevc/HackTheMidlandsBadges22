@@ -1,4 +1,11 @@
-# HTM badges
+# HTM interactive badges
+
+![](./htm-logo.png)
+
+This is the source code for the interactive badges at HackTheMidlands 7.0
+:tada:
+
+Feel free to contribute, or to fork it and make your own for your own event!
 
 ## Development
 
