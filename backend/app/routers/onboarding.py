@@ -25,7 +25,7 @@ class Resend(BaseModel):
 
 
 PLATFORM_CLIENT_URL = os.environ.get("PLATFORM_CLIENT_URL")
-SMTP_DEV = bool(json.loads(os.environ.get("SMTP_DEV", "false")))
+SMTP_DEV = bool(json.loads(os.environ.get("SMTP_DEV") or "false"))
 SMTP_USERNAME = os.environ.get("SMTP_USERNAME")
 SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD")
 SMTP_SERVER = os.environ.get("SMTP_SERVER")
