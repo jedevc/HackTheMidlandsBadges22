@@ -1,3 +1,4 @@
+import json
 import os
 import smtplib
 import ssl
@@ -24,6 +25,7 @@ class Resend(BaseModel):
 
 
 PLATFORM_CLIENT_URL = os.environ.get("PLATFORM_CLIENT_URL")
+SMTP_DEV = bool(json.loads(os.environ.get("SMTP_DEV", "false")))
 SMTP_USERNAME = os.environ.get("SMTP_USERNAME")
 SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD")
 SMTP_SERVER = os.environ.get("SMTP_SERVER")
@@ -127,9 +129,14 @@ def sendmail(user: models.User, usr: str, bdg: str, tkn: str):
             service.login(SMTP_USERNAME, SMTP_PASSWORD)
         service.sendmail(SMTP_USERNAME, user.email, mail.as_string())
         service.quit()
-    else:
+    elif SMTP_DEV:
         # developer fallback!
         print(mail.as_string())
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="sign up is no longer permitted",
+        )
 
 
 onboarding_subject = "Welcome to the HackTheMidlands Badge Platform!"
