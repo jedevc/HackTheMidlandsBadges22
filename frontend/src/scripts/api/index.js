@@ -1,34 +1,28 @@
 export function api({ path, method = "GET", body = null, token = null }) {
-  let headers = {};
-  if (body) {
-    headers["Content-Type"] = "application/json";
+  if (method !== "GET") {
+    throw new Error("Fake API only supports GET requests");
   }
-  if (token) {
-    headers["X-Token"] = token;
+
+  let components = path.replace(/(^\/+|\/+$)/, "").split("/");
+  if (components[0] === "badge") {
+    return {
+      id: components[1],
+      claimed: true,
+    };
   }
-  const req = new Request(process.env.PLATFORM_SERVER_URL + "/" + path, {
-    method,
-    body: body ? JSON.stringify(body) : undefined,
-    headers: new Headers(headers),
-  });
-  return fetch(req)
-    .then(
-      (res) =>
-        new Promise((resolve, reject) =>
-          res
-            .json()
-            .then((body) => resolve({ res, body }))
-            .catch(reject)
-        )
-    )
-    .then(({ res, body }) => {
+  if (components[0] === "store" && components[2] === "code") {
+    const url =
+      "https://htm22-badge-data.netlify.app/" + components[1] + ".lua";
+    return fetch(url).then((res) => {
       if (!res.ok) {
-        const message = body.detail || res.statusText;
-        let err = new Error(message);
+        let err = new Error(res.statusText);
         err.httpCode = res.status;
         err.httpMessage = res.statusText;
         throw err;
       }
-      return body;
+      return res.text().then((text) => ({ key: components[1], value: text }));
     });
+  }
+
+  throw new Error("Fake API does not support " + path);
 }

@@ -8,7 +8,7 @@ import Badge from "../../components/badge";
 import { FaEdit } from "react-icons/fa";
 import { api } from "../../api";
 
-const View = () => {
+const View = ({ editable = true }) => {
   const history = useHistory();
 
   const { id } = useParams();
@@ -38,7 +38,7 @@ const View = () => {
   return (
     <>
       <div className={styles.paneToolbar}>
-        {badge && (
+        {badge && editable && (
           <Button
             text="Edit"
             icon={<FaEdit />}

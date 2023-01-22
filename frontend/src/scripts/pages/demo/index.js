@@ -1,85 +1,27 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useHistory, useParams, Prompt } from "react-router-dom";
-import styles from "./editor.module";
+import styles from "../editor/editor.module";
 
 import Splitter, { SplitDirection } from "@devbookhq/splitter";
 import Monaco from "@monaco-editor/react";
 import Badge from "../../components/badge";
 import { FaGlasses, FaSave } from "react-icons/fa";
 
-import { api } from "../../api";
 import Button from "../../components/button";
-import useLocalStorage from "../../../hooks/useLocalStorage";
 import useBoundingClientRect from "../../../hooks/useBoundingClientRect";
-import { defaultProgram } from "./default";
+import { defaultProgram } from "../editor/default";
 
 const Editor = ({ editable = true }) => {
-  const history = useHistory();
-  const { id } = useParams();
-
-  const [storedKey, setStoredKey] = useLocalStorage("token", undefined);
-  if (editable && !storedKey) {
-    const state = id ? { badge: { id } } : null;
-    useEffect(() => {
-      history.push("/onboarding", state);
-    });
-    return <></>;
-  }
-
-  const [program, setProgram] = useState("-- loading...");
-  const [saved, setSaved] = useState(true);
+  const [program, setProgram] = useState(
+    defaultProgram.replaceAll("{user}", "a demo")
+  );
   const [errorMessage, setErrorMessage] = useState(errorMessage);
 
   const editorRef = useRef(null);
   const editorRect = useBoundingClientRect(editorRef);
 
-  const save = (value) => {
-    return api({
-      method: "PUT",
-      path: `store/${id}/code`,
-      token: storedKey,
-      body: { value },
-    });
-  };
-
-  useEffect(() => {
-    api({
-      path: `store/${id}/code`,
-      token: storedKey,
-    })
-      .then(({ value: program }) => {
-        if (program !== null) return program;
-        return api({
-          path: `users/${id}`,
-          token: storedKey,
-        }).then(({ name }) => {
-          const program = defaultProgram.replaceAll("{user}", name);
-          return save(program).then(() => program);
-        });
-      })
-      .then((program) => {
-        setProgram(program);
-        setSaved(true);
-      })
-      .catch((e) => {
-        if (e.httpCode !== 403) throw e;
-        const state = id ? { badge: { id } } : null;
-        history.push("/onboarding", state);
-      })
-      .catch((error) => {
-        history.push("/error", { error });
-      });
-  }, [id, storedKey]);
-
   const handleChange = (value) => {
     setProgram(value);
     setErrorMessage("");
-    setSaved(false);
-  };
-
-  const handleSave = () => {
-    save(program);
-    setSaved(true);
   };
 
   const handleError = (err) => {
@@ -114,24 +56,10 @@ const Editor = ({ editable = true }) => {
     setErrorMessage(message);
   };
 
-  useEffect(() => {
-    if (!saved) {
-      const handleTabClose = (event) => {
-        event.preventDefault();
-        event.returnValue = "";
-        return event.returnValue;
-      };
-      window.addEventListener("beforeunload", handleTabClose);
-      return () => {
-        window.removeEventListener("beforeunload", handleTabClose);
-      };
-    }
-  }, [saved]);
-
   const editorPane = (
     <Tabbed>
       <Tabs>
-        <Tab content={`badge.lua${!saved ? " *" : ""}`} active={true} />
+        <Tab content={`badge.lua`} active={true} />
       </Tabs>
       <Content>
         <div className={styles.paneEditor}>
@@ -162,26 +90,7 @@ const Editor = ({ editable = true }) => {
   );
   return (
     <div className={styles.editor} ref={editorRef}>
-      <Prompt
-        when={editable && !saved}
-        message="This page is asking you to confirm that you want to leave — information you've entered may not be saved."
-      />
-      <div className={styles.paneToolbar}>
-        {editable && (
-          <Button
-            text="Save"
-            icon={<FaSave />}
-            color="#3b66fa"
-            onClick={handleSave}
-          />
-        )}
-        <Button
-          text="View"
-          icon={<FaGlasses />}
-          color="#ff7365"
-          link={`/view/${id}`}
-        />
-      </div>
+      <div className={styles.paneToolbar} />
       {editorRect && editorRect.width < 600 ? (
         editorPane
       ) : (
