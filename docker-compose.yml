@@ -74,106 +74,93 @@ services:
       - "traefik.http.routers.frontend.tls=true"
       - "traefik.http.routers.frontend.tls.certresolver=resolver"
 
-  dev-backend:
-    profiles: [dev]
-    build:
-      context: ./backend/
-      target: dev
-    restart: on-failure
-    environment:
-      DB_HOST: db
-      DB_USER: "${DB_USER}"
-      DB_PASSWORD: "${DB_PASSWORD}"
-      DB_DATABASE: "${DB_DATABASE}"
-      SMTP_USERNAME: "${SMTP_USERNAME}"
-      SMTP_PASSWORD: "${SMTP_PASSWORD}"
-      SMTP_SERVER: "${SMTP_SERVER}"
-      SMTP_PORT: "${SMTP_PORT}"
-      SMTP_DEV: "${SMTP_DEV}"
-      MASTER_TOKEN: "${BACKEND_MASTER_TOKEN}"
-      PLATFORM_CLIENT_URL: "http://frontend.localhost"
-    volumes:
-      - "./backend/app:/usr/src/app/app"
-    depends_on:
-      - db
-    labels:
-      - "traefik.enable=true"
+  # dev-backend:
+  #   profiles: [dev]
+  #   build:
+  #     context: ./backend/
+  #     target: dev
+  #   restart: on-failure
+  #   environment:
+  #     DB_HOST: db
+  #     DB_USER: "${DB_USER}"
+  #     DB_PASSWORD: "${DB_PASSWORD}"
+  #     DB_DATABASE: "${DB_DATABASE}"
+  #     SMTP_USERNAME: "${SMTP_USERNAME}"
+  #     SMTP_PASSWORD: "${SMTP_PASSWORD}"
+  #     SMTP_SERVER: "${SMTP_SERVER}"
+  #     SMTP_PORT: "${SMTP_PORT}"
+  #     SMTP_DEV: "${SMTP_DEV}"
+  #     MASTER_TOKEN: "${BACKEND_MASTER_TOKEN}"
+  #     PLATFORM_CLIENT_URL: "http://frontend.localhost"
+  #   volumes:
+  #     - "./backend/app:/usr/src/app/app"
+  #   depends_on:
+  #     - db
+  #   labels:
+  #     - "traefik.enable=true"
 
-      - "traefik.http.routers.backend.rule=Host(`backend.localhost`)"
+  #     - "traefik.http.routers.backend.rule=Host(`backend.localhost`)"
 
-      - "traefik.http.routers.backend.middlewares=backend-cors@docker"
-      - "traefik.http.middlewares.backend-cors.headers.accesscontrolallowmethods=*"
-      - "traefik.http.middlewares.backend-cors.headers.accesscontrolallowheaders=*"
-      - "traefik.http.middlewares.backend-cors.headers.accesscontrolalloworiginlist=*"
+  #     - "traefik.http.routers.backend.middlewares=backend-cors@docker"
+  #     - "traefik.http.middlewares.backend-cors.headers.accesscontrolallowmethods=*"
+  #     - "traefik.http.middlewares.backend-cors.headers.accesscontrolallowheaders=*"
+  #     - "traefik.http.middlewares.backend-cors.headers.accesscontrolalloworiginlist=*"
 
-  prod-backend:
-    profiles: [prod]
-    build:
-      context: ./backend/
-      target: prod
-    restart: on-failure
-    environment:
-      UVICORN_WORKERS: 8
-      DB_HOST: db
-      DB_USER: "${DB_USER}"
-      DB_PASSWORD: "${DB_PASSWORD}"
-      DB_DATABASE: "${DB_DATABASE}"
-      SMTP_USERNAME: "${SMTP_USERNAME}"
-      SMTP_PASSWORD: "${SMTP_PASSWORD}"
-      SMTP_SERVER: "${SMTP_SERVER}"
-      SMTP_PORT: "${SMTP_PORT}"
-      SMTP_DEV: "${SMTP_DEV}"
-      MASTER_TOKEN: "${BACKEND_MASTER_TOKEN}"
-      PLATFORM_CLIENT_URL: "https://badges.$DOMAIN"
-    depends_on:
-      - db
-    labels:
-      - "traefik.enable=true"
+  # prod-backend:
+  #   profiles: [prod]
+  #   build:
+  #     context: ./backend/
+  #     target: prod
+  #   restart: on-failure
+  #   environment:
+  #     UVICORN_WORKERS: 8
+  #     DB_HOST: db
+  #     DB_USER: "${DB_USER}"
+  #     DB_PASSWORD: "${DB_PASSWORD}"
+  #     DB_DATABASE: "${DB_DATABASE}"
+  #     SMTP_USERNAME: "${SMTP_USERNAME}"
+  #     SMTP_PASSWORD: "${SMTP_PASSWORD}"
+  #     SMTP_SERVER: "${SMTP_SERVER}"
+  #     SMTP_PORT: "${SMTP_PORT}"
+  #     SMTP_DEV: "${SMTP_DEV}"
+  #     MASTER_TOKEN: "${BACKEND_MASTER_TOKEN}"
+  #     PLATFORM_CLIENT_URL: "https://badges.$DOMAIN"
+  #   depends_on:
+  #     - db
+  #   labels:
+  #     - "traefik.enable=true"
 
-      - "traefik.http.routers.backend-http.entrypoints=web"
-      - "traefik.http.routers.backend-http.rule=Host(`badges-api.$DOMAIN`)"
+  #     - "traefik.http.routers.backend-http.entrypoints=web"
+  #     - "traefik.http.routers.backend-http.rule=Host(`badges-api.$DOMAIN`)"
 
-      - "traefik.http.routers.backend.entrypoints=websecure"
-      - "traefik.http.routers.backend.rule=Host(`badges-api.$DOMAIN`)"
-      - "traefik.http.routers.backend.tls=true"
-      - "traefik.http.routers.backend.tls.certresolver=resolver"
+  #     - "traefik.http.routers.backend.entrypoints=websecure"
+  #     - "traefik.http.routers.backend.rule=Host(`badges-api.$DOMAIN`)"
+  #     - "traefik.http.routers.backend.tls=true"
+  #     - "traefik.http.routers.backend.tls.certresolver=resolver"
 
-      - "traefik.http.routers.backend.middlewares=backend-cors@docker,backend-limit@docker"
-      - "traefik.http.middlewares.backend-cors.headers.accesscontrolallowmethods=*"
-      - "traefik.http.middlewares.backend-cors.headers.accesscontrolallowheaders=*"
-      - "traefik.http.middlewares.backend-cors.headers.accesscontrolalloworiginlist=*"
+  #     - "traefik.http.routers.backend.middlewares=backend-cors@docker,backend-limit@docker"
+  #     - "traefik.http.middlewares.backend-cors.headers.accesscontrolallowmethods=*"
+  #     - "traefik.http.middlewares.backend-cors.headers.accesscontrolallowheaders=*"
+  #     - "traefik.http.middlewares.backend-cors.headers.accesscontrolalloworiginlist=*"
 
-      - "traefik.http.middlewares.backend-limit.buffering.maxRequestBodyBytes=1000000"
-      - "traefik.http.middlewares.backend-limit.buffering.maxResponseBodyBytes=10000000"
+  #     - "traefik.http.middlewares.backend-limit.buffering.maxRequestBodyBytes=1000000"
+  #     - "traefik.http.middlewares.backend-limit.buffering.maxResponseBodyBytes=10000000"
 
-  dev-db-web:
-    profiles: [dev]
-    image: sosedoff/pgweb
-    restart: on-failure
-    environment:
-      DATABASE_URL: "postgres://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_DATABASE}?sslmode=disable"
-    depends_on:
-      - db
-    labels:
-      - "traefik.enable=true"
-
-      - "traefik.http.routers.db.rule=Host(`db.localhost`)"
-
-  db:
-    image: postgres
-    restart: on-failure
-    environment:
-      POSTGRES_USER: "${DB_USER}"
-      POSTGRES_PASSWORD: "${DB_PASSWORD}"
-      POSTGRES_DB: "${DB_DATABASE}"
-    volumes:
-      - "db_data:/var/lib/postgresql/data"
-    # healthcheck:
-    #   test: ["CMD", "pg_isready", "-d", "${DB_DATABASE}"]
-    #   timeout: 60s
-    #   interval: 5s
-    #   retries: 10
+  # db:
+  #   image: postgres
+  #   restart: on-failure
+  #   environment:
+  #     POSTGRES_USER: "${DB_USER}"
+  #     POSTGRES_PASSWORD: "${DB_PASSWORD}"
+  #     POSTGRES_DB: "${DB_DATABASE}"
+  #   volumes:
+  #     - "db_data:/var/lib/postgresql/data"
+  #   # healthcheck:
+  #   #   test: ["CMD", "pg_isready", "-d", "${DB_DATABASE}"]
+  #   #   timeout: 60s
+  #   #   interval: 5s
+  #   #   retries: 10
 
 volumes:
-  db_data:
+  # db_data:
   acme:
